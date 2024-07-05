@@ -4,80 +4,16 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh-CN">
     <title type="text">Bejsernia&#39;s Blog</title>
     <subtitle type="html">MemE 是一个强大且可高度定制的 GoHugo 博客主题，专为个人博客设计。</subtitle>
-    <updated>2024-07-05T21:01:41&#43;08:00</updated>
-    <id>http://localhost:12633/</id>
-    <link rel="alternate" type="text/html" href="http://localhost:12633/" />
-    <link rel="self" type="application/atom&#43;xml" href="http://localhost:12633/atom.xml" />
+    <updated>2024-07-05T21:39:48&#43;08:00</updated>
+    <id>https://bejsernia.github.io/</id>
+    <link rel="alternate" type="text/html" href="https://bejsernia.github.io/" />
+    <link rel="self" type="application/atom&#43;xml" href="https://bejsernia.github.io/atom.xml" />
     <author>
             <name>Bejsernia</name>
-            <uri>http://localhost:12633/</uri>
+            <uri>https://bejsernia.github.io/</uri>
             
                 <email>kvis934@gmail.com</email>
             </author>
     <rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights>
     <generator uri="https://gohugo.io/" version="0.123.2">Hugo</generator>
-        <entry>
-            <title type="text">pip_skills</title>
-            <link rel="alternate" type="text/html" href="http://localhost:12633/posts/pip_skills/" />
-            <id>http://localhost:12633/posts/pip_skills/</id>
-            <updated>2024-07-05T21:01:41&#43;08:00</updated>
-            <published>2024-07-05T20:43:41&#43;08:00</published>
-            <author>
-                    <name>Bejsernia</name>
-                    <uri>http://localhost:12633/</uri>
-                    <email>kvis934@gmail.com</email>
-                    </author>
-            <rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">记录一些pip用法 指定依赖文件 pip install -r requirement.txt find link pip install -f xxx.html pip install --find-links xxx.html 绕过代理 pip install --proxy=&amp;#34;&amp;#34; 本地安装包 pip……</summary>
-            
-                <content type="html">&lt;h2 id=&#34;记录一些pip用法&#34;&gt;记录一些pip用法&lt;/h2&gt;
-&lt;h4 id=&#34;指定依赖文件&#34;&gt;指定依赖文件&lt;/h4&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;pip install -r requirement.txt
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&#34;find-link&#34;&gt;find link&lt;/h4&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;pip install -f xxx.html
-pip install --find-links xxx.html
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&#34;绕过代理&#34;&gt;绕过代理&lt;/h4&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;pip install --proxy=&amp;#34;&amp;#34;
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&#34;本地安装包&#34;&gt;本地安装包&lt;/h4&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;pip install xxx.tar.gz
-&lt;/code&gt;&lt;/pre&gt;</content>
-            
-            
-            
-            
-            
-                
-                    
-                
-                    
-                
-            
-        </entry>
-    
-        <entry>
-            <title type="text">Hello World</title>
-            <link rel="alternate" type="text/html" href="http://localhost:12633/posts/hello-world/" />
-            <id>http://localhost:12633/posts/hello-world/</id>
-            <updated>2024-02-23T17:16:40&#43;08:00</updated>
-            <published>2024-02-23T17:16:40&#43;08:00</published>
-            <author>
-                    <name>Bejsernia</name>
-                    <uri>http://localhost:12633/</uri>
-                    <email>kvis934@gmail.com</email>
-                    </author>
-            <rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html"></summary>
-            
-                <content type="html"></content>
-            
-            
-            
-            
-            
-                
-                    
-                
-                    
-                
-            
-        </entry>
-    
 </feed>

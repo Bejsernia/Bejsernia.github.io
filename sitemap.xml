@@ -2,23 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:12633/</loc>
-    <lastmod>2024-07-05T21:01:16+08:00</lastmod>
+    <loc>https://bejsernia.github.io/</loc>
+    <lastmod>2024-07-05T21:01:41+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:12633/posts/pip_skills/</loc>
-    <lastmod>2024-07-05T21:01:16+08:00</lastmod>
+    <loc>https://bejsernia.github.io/posts/</loc>
+    <lastmod>2024-07-05T21:01:41+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:12633/posts/</loc>
-    <lastmod>2024-07-05T21:01:16+08:00</lastmod>
+    <loc>https://bejsernia.github.io/categories/</loc>
   </url><url>
-    <loc>http://localhost:12633/about/</loc>
-    <lastmod>2024-02-23T17:16:52+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:12633/posts/hello-world/</loc>
-    <lastmod>2024-02-23T17:16:40+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:12633/categories/</loc>
-  </url><url>
-    <loc>http://localhost:12633/tags/</loc>
+    <loc>https://bejsernia.github.io/tags/</loc>
   </url>
 </urlset>
