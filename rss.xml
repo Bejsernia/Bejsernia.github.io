@@ -8,9 +8,9 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
         <title>Bejsernia&#39;s Blog</title>
-        <link>https://bejsernia.github.io/</link>
+        <link>http://localhost:12567/</link>
         <description>MemE 是一个强大且可高度定制的 GoHugo 博客主题，专为个人博客设计。</description>
-        <generator>Hugo 0.92.2 https://gohugo.io/</generator>
+        <generator>Hugo 0.123.2 https://gohugo.io/</generator>
         
             <language>zh-CN</language>
         
@@ -23,23 +23,50 @@
         
             <copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright>
         
-        <lastBuildDate>Thu, 24 Apr 2025 12:41:56 &#43;0800</lastBuildDate>
+        <lastBuildDate>Thu, 24 Apr 2025 13:19:39 &#43;0800</lastBuildDate>
         
-            <atom:link rel="self" type="application/rss&#43;xml" href="https://bejsernia.github.io/rss.xml" />
+            <atom:link rel="self" type="application/rss&#43;xml" href="http://localhost:12567/rss.xml" />
         
         
             <item>
-                <title></title>
-                <link>https://bejsernia.github.io/posts/qwrt/</link>
-                <guid isPermaLink="true">https://bejsernia.github.io/posts/qwrt/</guid>
-                <pubDate>Mon, 01 Jan 0001 00:00:00 &#43;0000</pubDate>
+                <title>QWRT配置经验——Xiaomi AX3000T</title>
+                <link>http://localhost:12567/posts/qwrt/</link>
+                <guid isPermaLink="true">http://localhost:12567/posts/qwrt/</guid>
+                <pubDate>Thu, 24 Apr 2025 12:51:27 &#43;0800</pubDate>
                 
                     <author>kvis934@gmail.com (Bejsernia)</author>
                 
                 <copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright>
                 
-                    <description>&lt;h1 id=&#34;qwrt配置经验xiaomi-ax3000t&#34;&gt;QWRT配置经验——Xiaomi AX3000T&lt;/h1&gt;
-&lt;hr&gt;
+                    <description>&lt;h2 id=&#34;目录&#34;&gt;目录&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#%E5%88%B7%E6%9C%BA&#34;&gt;刷机&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#1%E9%99%8D%E7%BA%A7%E5%9B%BA%E4%BB%B6%E5%88%B01047&#34;&gt;1. 降级固件到1.0.47&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#2%E8%A7%A3%E9%94%81ssh&#34;&gt;2. 解锁ssh&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#3ssh%E7%99%BB%E5%BD%95&#34;&gt;3. ssh登录&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#4%E5%88%B7%E5%85%A5openwrt&#34;&gt;4. 刷入openwrt&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#%E5%AE%89%E8%A3%85%E5%BA%94%E7%94%A8&#34;&gt;安装应用&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#shadowsocksr-plus&#34;&gt;ShadowSocksR Plus&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#1%E5%AE%A2%E6%88%B7%E7%AB%AF&#34;&gt;1. 客户端&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#2%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%8A%82%E7%82%B9&#34;&gt;2. 服务器节点&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#ddns%E5%8A%A8%E6%80%81dns&#34;&gt;DDNS(动态DNS)&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#duckdns&#34;&gt;DuckDNS&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#%E7%BD%91%E7%BB%9C%E5%94%A4%E9%86%92&#34;&gt;网络唤醒&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#%E6%8E%A5%E5%8F%A3&#34;&gt;接口&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#%E6%97%A0%E7%BA%BF%E9%85%8D%E7%BD%AE&#34;&gt;无线配置&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#dhcpdnsdnsmasq&#34;&gt;DHCP/DNS(Dnsmasq)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#socat%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91&#34;&gt;Socat(端口转发)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://localhost:12567/posts/qwrt/#load-balancing&#34;&gt;Load Balancing&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h2 id=&#34;刷机&#34;&gt;刷机&lt;/h2&gt;
 &lt;h3 id=&#34;1降级固件到1047&#34;&gt;1.降级固件到1.0.47&lt;/h3&gt;
 &lt;p&gt;用卡针顶住路由器reset 恢复按钮，再插上电源。持续按住reset按键8s左右，看到指示灯闪烁
@@ -50,10 +77,10 @@
 查看地址栏的stok值
 打开cmd运行：&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;set stok_value=你的值
-curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0Anvram%20set%20ssh_en%3D1%0A&amp;quot;
-curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0Anvram%20commit%0A&amp;quot;
-curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0Ased%20-i%20&#39;s%2Fchannel%3D.*%2Fchannel%3D%22debug%22%2Fg&#39;%20%2Fetc%2Finit.d%2Fdropbear%0A&amp;quot;
-curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0A%2Fetc%2Finit.d%2Fdropbear%20start%0A&amp;quot;
+curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;#34;open=1&amp;amp;model=1&amp;amp;level=%0Anvram%20set%20ssh_en%3D1%0A&amp;#34;
+curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;#34;open=1&amp;amp;model=1&amp;amp;level=%0Anvram%20commit%0A&amp;#34;
+curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;#34;open=1&amp;amp;model=1&amp;amp;level=%0Ased%20-i%20&amp;#39;s%2Fchannel%3D.*%2Fchannel%3D%22debug%22%2Fg&amp;#39;%20%2Fetc%2Finit.d%2Fdropbear%0A&amp;#34;
+curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;#34;open=1&amp;amp;model=1&amp;amp;level=%0A%2Fetc%2Finit.d%2Fdropbear%20start%0A&amp;#34;
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;3ssh登录&#34;&gt;3.ssh登录&lt;/h3&gt;
 &lt;p&gt;先得通过SN计算才能得出，sn在&lt;a href=&#34;http://192.168.31.1&#34;&gt;小米路由器管理界面&lt;/a&gt;界面右下角
 密码通过这个&lt;a href=&#34;https://miwifi.dev/ssh&#34;&gt;Xiaomi Router Developer Guide &amp;amp; Tools&lt;/a&gt; 网址输入sn就能得出
@@ -158,7 +185,29 @@ Domain就是在&lt;a href=&#34;duckdns.org&#34;&gt;DuckDNS&lt;/a&gt;注册的子
                 
                     
                         
+                            
+                                
+                                
+                                
+                                    <category domain="http://localhost:12567/categories/%E7%AC%94%E8%AE%B0/">笔记</category>
+                                
+                            
+                        
                     
+                        
+                            
+                                
+                                
+                                
+                                    <category domain="http://localhost:12567/tags/%E8%B7%AF%E7%94%B1%E5%99%A8/">路由器</category>
+                                
+                            
+                                
+                                
+                                
+                                    <category domain="http://localhost:12567/tags/%E7%BD%91%E7%BB%9C/">网络</category>
+                                
+                            
                         
                     
                 
