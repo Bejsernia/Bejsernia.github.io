@@ -23,7 +23,7 @@
         
             <copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright>
         
-        <lastBuildDate>Thu, 24 Apr 2025 20:33:05 &#43;0800</lastBuildDate>
+        <lastBuildDate>Thu, 24 Apr 2025 20:58:34 &#43;0800</lastBuildDate>
         
             <atom:link rel="self" type="application/rss&#43;xml" href="https://bejsernia.github.io/rss.xml" />
         
@@ -189,7 +189,7 @@ Domain就是在&lt;a href=&#34;duckdns.org&#34;&gt;DuckDNS&lt;/a&gt;注册的子
                                 
                                 
                                 
-                                    <category domain="https://bejsernia.github.io/categories/%E7%AC%94%E8%AE%B0/">笔记</category>
+                                    <category domain="https://bejsernia.github.io/categories/%E7%BB%8F%E9%AA%8C/">经验</category>
                                 
                             
                         
@@ -206,6 +206,465 @@ Domain就是在&lt;a href=&#34;duckdns.org&#34;&gt;DuckDNS&lt;/a&gt;注册的子
                                 
                                 
                                     <category domain="https://bejsernia.github.io/tags/%E7%BD%91%E7%BB%9C/">网络</category>
+                                
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/2025/">2025</category>
+                                
+                            
+                        
+                    
+                
+            </item>
+        
+            <item>
+                <title>HiST</title>
+                <link>https://bejsernia.github.io/posts/hist/</link>
+                <guid isPermaLink="true">https://bejsernia.github.io/posts/hist/</guid>
+                <pubDate>Tue, 11 Mar 2025 14:39:00 &#43;0800</pubDate>
+                
+                    <author>kvis934@gmail.com (Bejsernia)</author>
+                
+                <copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright>
+                
+                    <description>&lt;h1 id=&#34;hist-histological-image-reconstruct-tumor-spatial-transcriptomics-via-multiscale-fusion-deep-learning&#34;&gt;HiST: Histological Image Reconstruct Tumor Spatial Transcriptomics via MultiScale Fusion Deep Learning&lt;/h1&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/Yelab2020/HiST&#34;&gt;HiST Github Repository Address&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;table-of-contents&#34;&gt;Table of Contents&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#introduction&#34;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#installation&#34;&gt;Installation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#usage&#34;&gt;Usage&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#0-download-data&#34;&gt;0.Download data&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#1-preprocess-module&#34;&gt;1.Preprocess module&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#2-prediction-module&#34;&gt;2.Prediction module&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#3-application-module&#34;&gt;3.Application Module&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#credits-and-acknowledgments&#34;&gt;Credits and Acknowledgments&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#license&#34;&gt;License&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#citation&#34;&gt;Citation&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/Yelab2020/HiST&#34;&gt;Repository Address&lt;/a&gt;&lt;/p&gt;
+&lt;img src=&#34;HiST%20architecture.jpg&#34; width = &#34;570&#34; height = &#34;546&#34; alt=&#34;HiST Architecture&#34; align=center /&gt;
+&lt;p&gt;Spatial transcriptomics (ST) offers valuable insights into the tumor microenvironment by integrating molecular features with spatial context, but its clinical diagnostic application is limited due to its high cost.&lt;/p&gt;
+&lt;p&gt;To address this, we develop multi-scale convolutional deep learning framework, HiST, which utilizes ST to learn the relationship between spatially resolved gene expression profiles (GEPs) and histological morphology. HiST accurately predicts tumor regions (e.g., breast cancer, area under curve: 0.96), which are highly concordant with pathologist annotations. Then HiST reconstructs spatially resolved GEPs with an average Pearson correlation coefficient of 0.74 across five cancer types, which is &amp;gt;3 folds greater than that of the best previously reported tool. HiST&#39;s application module performs well in predicting cancer patient prognosis for five cancer types from the Cancer Genome Atlas (e.g., a concordance index 0.78 in breast cancer) and immunotherapy outcomes. Moreover, spatial GEPs aid to unveil regulatory networks and key regulators to immunotherapy.&lt;/p&gt;
+&lt;p&gt;In summary, HiST’s robust performance in tumor identification and reconstruction of spatial GEPs and its applications in prognosis prediction and immunotherapy response offer great potential for advancing tumor profiling and improving personalized cancer treatment.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;installation&#34;&gt;Installation&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;We recommend run HiST on &lt;strong&gt;Linux&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To get started, clone the repository and install the required dependencies:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git clone https://github.com/Yelab2020/HiST.git
+&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; HiST
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Method1 :Use requirement file(Not recommended):&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;conda create -n HiST &lt;span class=&#34;nv&#34;&gt;python&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;3.8.18 mamba
+conda activate HiST
+mamba install --yes -n HiST -c conda-forge --file requirements.txt
+pip install ./resource/timm-0.5.4.tar
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Use &lt;code&gt;nvcc -V&lt;/code&gt;to check cuda version on your device
+&lt;strong&gt;Method2 :Follow the instructions:&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;conda create -n HiST &lt;span class=&#34;nv&#34;&gt;python&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;3.8.18 mamba
+conda activate HiST
+&lt;span class=&#34;c1&#34;&gt;#Obtain the corresponding CUDA version of torch on your device:https://pytorch.org/get-started/locally/&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;#Or Install by mamba(Recommended):&lt;/span&gt;
+mamba install pytorch torchvision torchaudio pytorch-cuda&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;12.4 -c pytorch -c nvidia
+&lt;span class=&#34;c1&#34;&gt;#Author dependent configuration (used to reproduce):&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;#pip install torch==1.10.1+cu111 torchvision==0.11.2+cu111 torchaudio==0.10.1 -f https://download.pytorch.org/whl/cu111/torch_stable.html&lt;/span&gt;
+&lt;span class=&#34;c1&#34;&gt;#Other dependencies&lt;/span&gt;
+mamba install -c conda-forge python-spams&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;2.6.1
+pip install &lt;span class=&#34;nv&#34;&gt;numpy&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;==&lt;/span&gt;1.22 imgaug albumentations pandas matplotlib scikit-learn opencv-python staintools lifelines torchsurv openpyxl palettable leidenalg ipykernel tqdm scanpy
+&lt;span class=&#34;c1&#34;&gt;#Install modified timm for CTranspath(Feature extraction model)&lt;/span&gt;
+pip install ./resource/timm-0.5.4.tar
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;install seurat in R(conda env HiST)&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;mamba install rpy2 r-tidyverse r-Seurat -c r
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-R&#34; data-lang=&#34;R&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# Run in R console&lt;/span&gt;
+&lt;span class=&#34;n&#34;&gt;packages&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;c&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Seurat&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;tidyverse&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;nf&#34;&gt;install.packages&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;sf&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;repos&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;https://cran.r-project.org&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Used for gene selection method (Optional):&lt;a href=&#34;https://r-spatial.github.io/sf/&#34;&gt;R package sf installation instructions&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+sudo apt-get update
+sudo apt-get install libudunits2-dev libgdal-dev libgeos-dev libproj-dev libsqlite0-dev
+mamba install r-sf r-spdep -c r
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Other dependencies(Optional; if WSIs are used for training or prediction)&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;sudo apt update &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt install -y openslide-tools
+pip install openslide-python
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;hr&gt;
+&lt;h2 id=&#34;usage&#34;&gt;Usage&lt;/h2&gt;
+&lt;p&gt;We use two sample from CRC dataset of 10x Visium technology as an example.&lt;/p&gt;
+&lt;h3 id=&#34;0-download-data&#34;&gt;0. Download data&lt;/h3&gt;
+&lt;h5 id=&#34;apre-trained-model-weights-for-feature-extraction-can-be-downloaded-herehttpsdrivegooglecomfiled1dodx_70_tlj98gtf6ytxnu4tfhsfocdxviewuspsharing-and-please-put-it-in-your_working_directoryhistresource&#34;&gt;(A)Pre-trained model weights for feature extraction can be downloaded &lt;a href=&#34;https://drive.google.com/file/d/1DoDx_70_TLj98gTf6YTXnu4tFhsFocDX/view?usp=sharing&#34;&gt;here&lt;/a&gt;, and please put it in &lt;code&gt;/your_working_directory/HiST/resource/&lt;/code&gt;.&lt;/h5&gt;
+&lt;h5 id=&#34;btwo-test-sample-data-of-crc-can-be-downloaded-herehttpsdrivegooglecomfiled1-87c3eqf4uk-esniwlmgfwudvxnx-sb_viewuspsharing-please-unzip-datazip-and-put-the-contents-in-your_working_directoryhistdata&#34;&gt;(B)Two test sample data of CRC can be downloaded &lt;a href=&#34;https://drive.google.com/file/d/1-87C3EQf4UK-EsNiWlMGFWUDvxNX-Sb_/view?usp=sharing&#34;&gt;here&lt;/a&gt;. Please unzip data.zip and put the contents in &lt;code&gt;/your_working_directory/HiST/data/&lt;/code&gt;&lt;/h5&gt;
+&lt;p&gt;Data folder structure:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;HE: Full resolution HE images.&lt;/li&gt;
+&lt;li&gt;hires_HE: High resolution HE images provided by spaceranger.&lt;/li&gt;
+&lt;li&gt;seurat_obj: ST sample Seurat objects.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;./data
+├── HE
+│   ├── CRC1.jpg
+│   └── CRC2.jpg
+├── hires_HE
+│   ├── CRC1_tissue_hires_image.png
+│   └── CRC2_tissue_hires_image.png
+├── seurat_obj
+│   ├── CRC1.rds.gz
+│   └── CRC2.rds.gz
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;1-preprocess-module&#34;&gt;1. Preprocess module&lt;/h3&gt;
+&lt;p&gt;For preprocess module, we obtained the histological information and spatial context of the original whole slice imaging (WSI), avoiding the high GPU memory requirements of high-resolution WSI.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Step1(Optional): Gene selection &lt;code&gt;./R/1.gene_select.R&lt;/code&gt;.
+Sample file: &lt;code&gt;./resource/CRC_SVG346_list.txt&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;Rscript ./R/1.gene_select.R
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;Step2: Create gene matrix and mask matrix &lt;code&gt;./R/2.get_matrix.R&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;Rscript ./R/2.get_matrix.R
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;Step3: Prepare mask and patch &amp;amp; feature extraction.
+Run in python, referring to the &lt;a href=&#34;./vignettes/1.preprocess_module.ipynb&#34;&gt;vignette&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;2-prediction-module&#34;&gt;2. Prediction module&lt;/h3&gt;
+&lt;p&gt;We used an improved U-Net framework on prediction module with two prediction tasks, including &lt;strong&gt;tumor spots identification and tumor spatial transcriptomics prediction.&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;em&gt;Please refer to the &lt;a href=&#34;./vignettes/2.prediction_module.ipynb&#34;&gt;vignette&lt;/a&gt; for specific steps.&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;3-application-module&#34;&gt;3. Application module&lt;/h3&gt;
+&lt;p&gt;We utilized the ST profiles obtained from prediction module as the molecular features of HE histology images and trained the model for &lt;strong&gt;disease prognosis and immunotherapy response prediction.&lt;/strong&gt;&lt;/p&gt;
+&lt;h5 id=&#34;a-survival-model&#34;&gt;A. Survival model&lt;/h5&gt;
+&lt;ul&gt;
+&lt;li&gt;Step0: Download slide images from &lt;a href=&#34;https://portal.gdc.cancer.gov/&#34;&gt;TCGA&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Step1: Prepare WSI patches.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;(i) Cut WSIs into patches
+Output: HE(resized smaller TCGA HE images) and tiles.
+Usage:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;nohup python ./util/TCGA_HE_preprocess.py --data_path &lt;span class=&#34;s1&#34;&gt;&amp;#39;./data/TCGA/Biospecimen/Slide_Image&amp;#39;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;--output_path &lt;span class=&#34;s1&#34;&gt;&amp;#39;./output/TCGA/&amp;#39;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;--cores &lt;span class=&#34;m&#34;&gt;8&lt;/span&gt; &amp;gt; ./HE_preprocess.log 2&amp;gt;&lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;(ii) Clean up tiles (Optional): &lt;a href=&#34;https://github.com/lucasrla/wsi-tile-cleanup&#34;&gt;source:wsi-tile-cleanup&lt;/a&gt;
+Output: Tiles only containing tissue sections.
+Installation:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;conda create -n wsi_cleanup --channel conda-forge &lt;span class=&#34;nv&#34;&gt;python&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;3.6 libvips pyvips numpy
+conda activate wsi_cleanup
+python3.6 -m pip install git+https://github.com/lucasrla/wsi-tile-cleanup.git
+pip install pillow ipykernel tqdm pandas
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Usage:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;nohup python tile_cleanup.py --source_root_path &lt;span class=&#34;s1&#34;&gt;&amp;#39;./output/TCGA/tiles&amp;#39;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;--output_path &lt;span class=&#34;s1&#34;&gt;&amp;#39;../output/TCGA/clean_tiles_75/&amp;#39;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;--cutoff 0.75 --cores &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt; &amp;gt; ./TCGA_tile_cleanup.log 2&amp;gt;&lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;em&gt;Please refer to the &lt;a href=&#34;./vignettes/3.1application_module_survival.ipynb&#34;&gt;vignette&lt;/a&gt; for the following steps.&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Step3: Feature extraction.&lt;/li&gt;
+&lt;li&gt;Step4: Spatial gene profiles prediction by HiST gene prediction module.&lt;/li&gt;
+&lt;li&gt;Step5: Training survival model.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5 id=&#34;b-immunotherapy-response-model&#34;&gt;B. Immunotherapy response model&lt;/h5&gt;
+&lt;p&gt;&lt;em&gt;Please refer to the &lt;a href=&#34;./vignettes/3.2application_module_ICB.ipynb&#34;&gt;vignette&lt;/a&gt; for the following steps.&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Step0: Download slide images from &lt;a href=&#34;https://ngdc.cncb.ac.cn/&#34;&gt;NGDC&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Step1: Prepare WSI patches.&lt;/li&gt;
+&lt;li&gt;Step3: Feature extraction.&lt;/li&gt;
+&lt;li&gt;Step4: Spatial gene profiles prediction by HiST gene prediction module.&lt;/li&gt;
+&lt;li&gt;Step5: Training classfication model.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;credits-and-acknowledgments&#34;&gt;Credits and Acknowledgments&lt;/h2&gt;
+&lt;p&gt;Ground truth of tumor segmentation was inferred by &lt;a href=&#34;https://github.com/Yelab2020/Cottrazm&#34;&gt;Cottrazm&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Pretrained model weights are from &lt;a href=&#34;https://github.com/Xiyue-Wang/TransPath&#34;&gt;CTransPath&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Tiles clean up method using &lt;a href=&#34;https://github.com/lucasrla/wsi-tile-cleanup&#34;&gt;wsi-tile-cleanup&lt;/a&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;license&#34;&gt;License&lt;/h2&gt;
+&lt;p&gt;This project is licensed under the MIT License. See the &lt;a href=&#34;LICENSE&#34;&gt;LICENSE&lt;/a&gt; file for details.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;citation&#34;&gt;Citation&lt;/h2&gt;
+&lt;p&gt;(Unpublished now)&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;@article{HiST,
+    title={HiST: Histological Image Reconstruct Tumor Spatial Transcriptomics via MultiScale Fusion Deep Learning},
+    author={Wei Li#, Dong Zhang#, Eryu Peng, Shijun Shen, Yao Liu*, Junke Zheng*, Cizhong Jiang*, Youqiong Ye*},
+    journal={XX},
+    year={2025},
+    doi={xx}
+}
+&lt;/code&gt;&lt;/pre&gt;</description>
+                
+                
+                
+                
+                
+                    
+                        
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/categories/%E5%AD%A6%E6%9C%AF/">学术</category>
+                                
+                            
+                        
+                    
+                        
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习</category>
+                                
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/readme/">README</category>
+                                
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/%E6%88%91%E7%9A%84%E8%AE%BA%E6%96%87/">我的论文</category>
+                                
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/2025/">2025</category>
+                                
+                            
+                        
+                    
+                
+            </item>
+        
+            <item>
+                <title>深度学习2023笔记</title>
+                <link>https://bejsernia.github.io/posts/dl2023/</link>
+                <guid isPermaLink="true">https://bejsernia.github.io/posts/dl2023/</guid>
+                <pubDate>Wed, 12 Jul 2023 20:43:27 &#43;0800</pubDate>
+                
+                    <author>kvis934@gmail.com (Bejsernia)</author>
+                
+                <copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright>
+                
+                    <description>&lt;p&gt;某次心血来潮翻看会议文章集记录的一点内容&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.zeta-alpha.com/post/a-guide-to-neurips-2022-10-topics-and-50-papers-you-shouldn-t-miss&#34;&gt;A Guide to NeurIPS 2022 — 10 Topics and 50 Papers You Shouldn&#39;t Miss&lt;/a&gt; &lt;em&gt;&lt;strong&gt;（nips2022)&lt;/strong&gt;&lt;/em&gt;
+2672 main papers, 63 workshops, 7 invited talks, and finally in person again. Language Models, Brain-Inspired research, Diffusion Models, Graph Neural Networks... NeurIPS comes packed with world-class AI research insights, and this guide will help you find where to focus your attention.&lt;/p&gt;
+&lt;h1 id=&#34;知识蒸馏模型knowledge-distillation-model&#34;&gt;知识蒸馏模型（Knowledge Distillation Model）&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://blog.csdn.net/m0_37723079/article/details/123954975&#34;&gt;https://blog.csdn.net/m0_37723079/article/details/123954975&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Untitled.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Teacher模型&lt;/strong&gt;：首先，我们需要一个原始的“大”模型——Teacher模型，这个模型可以不限制其结构、参数量、是否集成，要求这个模型尽可能精度高，并且对于给定的输入X可以给出输出的监督信息Y，这个Y在分类任务中就是softmax的结果，也就是输出对应类别的概率值。这里我们称Y为soft targets，而训练数据的标注好的标签，我们称为hard targets。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Student模型&lt;/strong&gt;：这个部分的模型选择会有很多限制，要求其参数量小，结构相对简单，当然最好是单模型。并且需要注意的是，训练过程中student模型学习的不再是单纯的hard targets（标注好的真实标签），而是融入teacher模型输出的soft targets（监督信息Y），这里也被称为knowledge transfer。蒸馏的损失函数distillation loss分为两部分：一部分计算teacher和student之间输出预测值的差别（student预测的y 和 soft targets），另一部分计算student原本的loss（student预测的y 和 hard targets），这两部分做凸组合作为整个模型训练的损失函数来进行梯度更新，最终获得一个同时兼顾精度和性能的student模型。&lt;/p&gt;
+&lt;h2 id=&#34;从训练方式区分&#34;&gt;从训练方式区分&lt;/h2&gt;
+&lt;p&gt;论文：&lt;em&gt;Knowledge Distillation and Student-Teacher Learning for Visual Intelligence: A Review and New Outlooks&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Untitled%201.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;离线蒸馏方式&lt;/strong&gt;，即为传统的知识蒸馏，如上图（a）。一般来讲，Teacher模型的参数在蒸馏训练过程中保持不变，选用的Teacher模型和Student模型准确性相对悬殊比较大，并且Student模型会在很大程度上依赖Teacher模型。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;半监督训练方式&lt;/strong&gt;，利用了Teacher模型的预测信息作为标签来对Sudent网络进行监督学习，如上图（b），不同于传统的离线蒸馏方式，在对Student模型训练之前，先输入部分未标记的数据，利用Teacher网络输出的标签作为监督信息，再输入到Student网络中来完成蒸馏，这样可以使用更少的标注数据，达到提升模型精度的目的。在online蒸馏中，Student模型和Teacher模型将同时更新，整个知识提炼框架是可以从端到端训练的。给出一篇online蒸馏的文章：&lt;strong&gt;Online Knowledge Distillation with Diverse Peers&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;自监督蒸馏&lt;/strong&gt;，相比于传统的离线蒸馏方式，是不需要提前训练一个Teacher模型的，而是Student网络本身的训练是一个蒸馏过程，如上图（c）。具体的实现方式有很多种，比如训练Student模型时，在整个训练过程的最后几个epoch的时候，利用前面训练的Student模型作为监督模型，在剩下的几个epoch中对模型进行蒸馏。这样做的好处，是不需要提前训练一个Teacher模型，可以做到边训练边蒸馏，节省整个蒸馏过程的训练时间。同样给出一篇自监督的蒸馏：&lt;em&gt;&lt;strong&gt;Be Your Own Teacher: Improve the Performance of Convolutional Neural Networks via Self Distillation&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;h2 id=&#34;从知识来源位置区分&#34;&gt;从知识来源位置区分&lt;/h2&gt;
+&lt;p&gt;论文：&lt;em&gt;Knowledge Distillation: A Survey&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Untitled%202.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Response-Based的知识是从teacher模型的output layer中学习到的，而Feature-Based是从hidden layer中学习到的知识，Relation-Based则是学习input-hidden-output之间的关系。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Untitled%203.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;蒸馏在nlp中的应用&#34;&gt;蒸馏在NLP中的应用&lt;/h2&gt;
+&lt;p&gt;在NLP的大部分任务中，我们可能习惯上追崇Bert大法，但是Bert本身参数量比较大，在一些特殊情况下，我们需要部署一个小而美的模型，这时候我们需要给Bert进行“瘦身”。一般认为比较有效的瘦身方法有上面介绍的蒸馏、量化（Quantization）、剪枝（Pruning）。这里我们介绍几个效果不错的Bert蒸馏模型。&lt;/p&gt;
+&lt;h3 id=&#34;distillbert&#34;&gt;DistillBERT&lt;/h3&gt;
+&lt;p&gt;论文地址：&lt;a href=&#34;https://arxiv.org/pdf/1910.01108.pdf&#34;&gt;https://arxiv.org/pdf/1910.01108.pdf&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;tinybert&#34;&gt;TinyBERT&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;论文地址&lt;/strong&gt;：&lt;a href=&#34;https://arxiv.org/pdf/1909.10351.pdf&#34;&gt;https://arxiv.org/pdf/1909.10351.pdf&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;项目地址&lt;/strong&gt;：&lt;a href=&#34;https://github.com/huawei-noah/Pretrained-Language-Model/tree/master/TinyBERT&#34;&gt;https://github.com/huawei-noah/Pretrained-Language-Model/tree/master/TinyBERT&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&#34;扩散模型diffusion-model&#34;&gt;扩散模型（Diffusion Model）&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://blog.csdn.net/weixin_47772355/article/details/128475726&#34;&gt;https://blog.csdn.net/weixin_47772355/article/details/128475726&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;功能&#34;&gt;功能&lt;/h2&gt;
+&lt;p&gt;1、文字生成图片&lt;/p&gt;
+&lt;p&gt;2、根据给定的图片生成相似风格画作&lt;/p&gt;
+&lt;p&gt;3、图片延展&lt;/p&gt;
+&lt;h2 id=&#34;生成模型对比&#34;&gt;生成模型对比&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;Untitled%204.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;原理扩散现象&#34;&gt;原理：扩散现象&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;物理&lt;/strong&gt;：物质分子从高浓度向低浓度区域转移，直到均匀分布。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;AI&lt;/strong&gt;：由熵增定律驱动，先给一幅图片增加噪声，让其变得极其混乱，再训练AI把混乱的照片变回有序（实现图片生成）。&lt;/p&gt;
+&lt;h2 id=&#34;实现方式&#34;&gt;实现方式&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;Untitled%205.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;p&gt;1、前向过程（加噪）&lt;/p&gt;
+&lt;p&gt;2、反向过程（去噪）&lt;/p&gt;
+&lt;h1 id=&#34;增强学习reinforcement-learning&#34;&gt;增强学习（Reinforcement Learning）&lt;/h1&gt;
+&lt;h1 id=&#34;自监督self-supervision&#34;&gt;自监督（Self-supervision）&lt;/h1&gt;
+&lt;p&gt;&lt;img src=&#34;Untitled%206.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;定义&#34;&gt;定义&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;自监督学习（Self-Supervised Learning）&lt;/strong&gt; 是&lt;em&gt;无监督学习&lt;/em&gt;里面的一种，也被称作(pretext task)。自监督学习主要是利用辅助任务（pretext）从大规模的无监督数据中挖掘自身的监督信息，通过这种构造的监督信息对网络进行训练，从而可以学习到对下游任务有价值的表征。 自监督学习的&lt;em&gt;优势&lt;/em&gt;，就是可以在无标签的数据上完成训练，而监督学习需要大量的有标签数据，强化学习需要与环境的大量交互尝试，数据为王的时代，此特点也使得大家充分相信自监督学习才是人工智能的发展方向。&lt;/p&gt;
+&lt;h2 id=&#34;自监督学习的主要方法&#34;&gt;自监督学习的主要方法&lt;/h2&gt;
+&lt;h3 id=&#34;-基于上下文context-based&#34;&gt;&lt;strong&gt;● 基于上下文（Context based）&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;基于数据本身的上下文信息，我们可以构造很多任务，如NLP领域中重要的Word2vec算法。Word2vec主要是利用语句的顺序，例如CBOW通过利用周围词来预测中心词，而Skip-Gram通过中心词来预测周围的词。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://mmbiz.qpic.cn/mmbiz_png/iceydPUR0IY2bum9rDm6cGkcXqWqys6DvcgEuwM0hrneicubOWibCGibTMbsk1ke0VsvAra92wRdZgM8nj6tU2ozdg/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&#34;&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;图 1 Word2vec的两种方法&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在图像领域，研究人员通过一种名为Jigsaw（拼图）的方式来构造辅助任务（pretext）。将一张图分成9个部分，然后通过预测这几个部分的相对位置来产生损失。比如输入这张图中小猫的眼睛和右耳朵，然后让模型学习到猫的右耳朵是在眼睛的右上方的，如果模型能够很好得完成这个任务，那么就可以认为模型学习到的表征是具有语义信息的。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://mmbiz.qpic.cn/mmbiz_png/iceydPUR0IY2bum9rDm6cGkcXqWqys6DvoKuUwQpjibEuQBvmZauMdM6pyulB2JXNSwRXm8NRusRib4icMjloZbVUQ/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&#34;&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;基于上下文预测的无监督视觉表征学习&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;-基于时序temporal-based&#34;&gt;&lt;strong&gt;● 基于时序（Temporal Based）&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;在基于上下文的方法中大多是基于样本本身的信息，而样本间其实也具有很多的约束关系，因此可以利用时序约束来进行自监督学习。最能体现时序的数据类型就是视频（video）。&lt;/p&gt;
+&lt;p&gt;在视频领域可以基于帧的相似性进行研究，对于视频中的每一帧存在特征相似的概念，简单来说可以认为视频中的相邻帧的特征是相似的，而相隔较远的视频帧之间的相似度较低。通过构建这种相似（positive）和不相似（negative）的样本来进行自监督约束。&lt;/p&gt;
+&lt;h3 id=&#34;-基于对比contrastive-based&#34;&gt;&lt;strong&gt;● 基于对比（Contrastive Based）&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;第三类自监督学习的方法是基于对比约束，它通过学习对两个事物的相似或不相似进行编码来构建表征。在第二部分中所介绍的基于时序的方法已经涉及到了基于对比的约束，其通过构建正样本（positive）和负样本（negative），然后度量正负样本的距离从而实现自监督学习。&lt;/p&gt;
+&lt;h1 id=&#34;自编码器auto-encoder&#34;&gt;自编码器（Auto-encoder)&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/561216882&#34;&gt;https://zhuanlan.zhihu.com/p/561216882&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;示意图&#34;&gt;示意图&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;Untitled%207.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
+&lt;h1 id=&#34;一些其他热门方向&#34;&gt;一些其他热门方向&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;类脑（Brain-Inspired）&lt;/li&gt;
+&lt;li&gt;域外泛化（Out-of-domain Genelization）&lt;/li&gt;
+&lt;li&gt;图神经网络（Graph Neural Networks）&lt;/li&gt;
+&lt;li&gt;Learning Theory&lt;/li&gt;
+&lt;li&gt;Language Models and Prompting&lt;/li&gt;
+&lt;li&gt;Adversarial Robustness, Federated Learning, Compression&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+                
+                
+                
+                
+                
+                    
+                        
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/categories/%E7%AC%94%E8%AE%B0/">笔记</category>
+                                
+                            
+                        
+                    
+                        
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习</category>
+                                
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/2023/">2023</category>
                                 
                             
                         
