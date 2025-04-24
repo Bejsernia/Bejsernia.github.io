@@ -10,7 +10,7 @@
         <title>Bejsernia&#39;s Blog</title>
         <link>https://bejsernia.github.io/</link>
         <description>MemE 是一个强大且可高度定制的 GoHugo 博客主题，专为个人博客设计。</description>
-        <generator>Hugo 0.123.2 https://gohugo.io/</generator>
+        <generator>Hugo 0.92.2 https://gohugo.io/</generator>
         
             <language>zh-CN</language>
         
@@ -23,10 +23,146 @@
         
             <copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright>
         
-        <lastBuildDate>Fri, 05 Jul 2024 21:55:20 &#43;0800</lastBuildDate>
+        <lastBuildDate>Thu, 24 Apr 2025 12:41:56 &#43;0800</lastBuildDate>
         
             <atom:link rel="self" type="application/rss&#43;xml" href="https://bejsernia.github.io/rss.xml" />
         
+        
+            <item>
+                <title></title>
+                <link>https://bejsernia.github.io/posts/qwrt/</link>
+                <guid isPermaLink="true">https://bejsernia.github.io/posts/qwrt/</guid>
+                <pubDate>Mon, 01 Jan 0001 00:00:00 &#43;0000</pubDate>
+                
+                    <author>kvis934@gmail.com (Bejsernia)</author>
+                
+                <copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright>
+                
+                    <description>&lt;h1 id=&#34;qwrt配置经验xiaomi-ax3000t&#34;&gt;QWRT配置经验——Xiaomi AX3000T&lt;/h1&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;刷机&#34;&gt;刷机&lt;/h2&gt;
+&lt;h3 id=&#34;1降级固件到1047&#34;&gt;1.降级固件到1.0.47&lt;/h3&gt;
+&lt;p&gt;用卡针顶住路由器reset 恢复按钮，再插上电源。持续按住reset按键8s左右，看到指示灯闪烁
+通过官方救砖工具刷入固件。
+上传一个文件夹中1.0.47固件。上传成功后等待3-5分钟，看路由器的蓝灯闪烁。就可以手动断电重启路由，这时路由器就降级为1.0.47系统了。&lt;/p&gt;
+&lt;h3 id=&#34;2解锁ssh&#34;&gt;2.解锁ssh&lt;/h3&gt;
+&lt;p&gt;登录到&lt;a href=&#34;http://192.168.31.1&#34;&gt;小米路由器管理界面&lt;/a&gt;
+查看地址栏的stok值
+打开cmd运行：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;set stok_value=你的值
+curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0Anvram%20set%20ssh_en%3D1%0A&amp;quot;
+curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0Anvram%20commit%0A&amp;quot;
+curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0Ased%20-i%20&#39;s%2Fchannel%3D.*%2Fchannel%3D%22debug%22%2Fg&#39;%20%2Fetc%2Finit.d%2Fdropbear%0A&amp;quot;
+curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0A%2Fetc%2Finit.d%2Fdropbear%20start%0A&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;3ssh登录&#34;&gt;3.ssh登录&lt;/h3&gt;
+&lt;p&gt;先得通过SN计算才能得出，sn在&lt;a href=&#34;http://192.168.31.1&#34;&gt;小米路由器管理界面&lt;/a&gt;界面右下角
+密码通过这个&lt;a href=&#34;https://miwifi.dev/ssh&#34;&gt;Xiaomi Router Developer Guide &amp;amp; Tools&lt;/a&gt; 网址输入sn就能得出
+用该密码登录root账户即可&lt;/p&gt;
+&lt;p&gt;上传uboot固件到&lt;code&gt;/tmp&lt;/code&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cd /tmp
+mtd write mt7981_ax3000t-fip-fixed-parts-multi-layout.bin FIP #回车输入uboot
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;等待3-5分钟 然后uboot写入成功后，指示灯会有变化，然后拔掉电源。&lt;/p&gt;
+&lt;h3 id=&#34;4刷入openwrt&#34;&gt;4.刷入openwrt&lt;/h3&gt;
+&lt;p&gt;进入uboot的方法按住路由器的reset键再通电。一直按住状态等待15秒左右，指示灯变蓝就行。
+手动电脑的IP地址设置为&lt;code&gt;192.168.1.2&lt;/code&gt;，然后进&lt;code&gt;192.168.1.1&lt;/code&gt;，就能见到uboot的ui界面了。&lt;/p&gt;
+&lt;p&gt;在uboot界面里选择qwrt，上传网盘中的&lt;code&gt;openwrt-mediatek-R23.11.11-mt7981-xiaomi_mi-router-ax3000t-squashfs-sysupgrade.bin&lt;/code&gt;固件就可以了。大概三到五分钟就能刷入成功，重启路由就搞定了，重启后电脑设置自动获取IP，固件后台地址&lt;code&gt;192.168.1.1&lt;/code&gt;；登录名&lt;code&gt;root&lt;/code&gt; 密码 &lt;code&gt;password&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;参考：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://liangnianban.com/blog/83&#34;&gt;https://liangnianban.com/blog/83&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.csdn.net/jgw2008/article/details/135645594&#34;&gt;https://blog.csdn.net/jgw2008/article/details/135645594&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;安装应用&#34;&gt;安装应用&lt;/h2&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;opkg update
+opkg install &amp;lt;package&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;hr&gt;
+&lt;h2 id=&#34;shadowsocksr-plus&#34;&gt;ShadowSocksR Plus&lt;/h2&gt;
+&lt;h3 id=&#34;1客户端&#34;&gt;1.客户端&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;运行模式&lt;/strong&gt;
+目前选择&lt;code&gt;GFW列表模式&lt;/code&gt;，否则校园网内部ip的域名会走国外域名DNS服务器，导致无法解析出ip地址&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;需要代理的端口&lt;/strong&gt;
+&lt;code&gt;选择仅常用端口&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;DNS解析方式&lt;/strong&gt;
+shadowsocksr的DNS配置选择好像会影响Dnsmasq是否能够代理
+这与该选项以及国内外域名DNS服务器的选择有关
+目前我的选择是：&lt;code&gt;使用DNS2SOCKS查询并缓存&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;2服务器节点&#34;&gt;2.服务器节点&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;订阅URL栏填写Clash或其他类型订阅地址&lt;/li&gt;
+&lt;li&gt;订阅节点关键字过滤&lt;code&gt;过期时间/剩余流量/QQ群/官网/防失联地址/回国/开通/套餐/x2&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;订阅节点关键字保留检查 &lt;code&gt;香港/日本/新加坡/JLab&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Wukong代理服务器配置需要在节点部分手动添加&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;ddns动态dns&#34;&gt;DDNS(动态DNS)&lt;/h2&gt;
+&lt;h4 id=&#34;duckdns&#34;&gt;DuckDNS&lt;/h4&gt;
+&lt;p&gt;似乎DuckDNS登录了网页以后会自动把IP设置为当前设备ip对应的公网ip
+日志储存在&lt;code&gt;/var/log/ddns/DuckDNS.log&lt;/code&gt;
+使用命令&lt;code&gt;dig xx.com @8.8.8.8&lt;/code&gt;可以测试DNS解析域名
+&lt;strong&gt;1.基础设置&lt;/strong&gt;
+Domain就是在&lt;a href=&#34;duckdns.org&#34;&gt;DuckDNS&lt;/a&gt;注册的子域名&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;查询主机名&lt;code&gt;Domain.duckdns.org&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;DDNS服务提供商填&lt;code&gt;DuckDNS&lt;/code&gt;或者自定义更新URL&lt;code&gt;https://www.duckdns.org/update?domains=[DOMAIN]&amp;amp;token=[PASSWORD]&amp;amp;ip=&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;域名填注册的Domain&lt;/li&gt;
+&lt;li&gt;密码填DuckDNS中的令牌&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;2.高级设置&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;IP地址来源：接口或WAN；在实验室我使用接口eth1（校园网分配的ip）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a href=&#34;https://post.smzdm.com/p/a60d48zo/&#34;&gt;OPENWRT多拨后利用ddns-go给多路vwan指定子域名&lt;/a&gt;(还没试过)&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;网络唤醒&#34;&gt;网络唤醒&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;网络唤醒程序使用&lt;code&gt;Etherwake&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;选择使用的网络接口&lt;code&gt;br-lan&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;选择要唤醒的主机：通过ip或者mac判断哪部设备是pc（有点难）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;接口&#34;&gt;接口&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;物理上的WAN口和LAN口配置，参考：&lt;a href=&#34;https://post.smzdm.com/p/az6p9ggr/&#34;&gt;openwrt vlan详解与WAN口、LAN口任意设定指南&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;VWAN配置，参考：&lt;a href=&#34;https://blog.csdn.net/m0_59496782/article/details/121862378&#34;&gt;拿什么拯救你，我的校园网——校园网优化之单线多拨&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;无线配置&#34;&gt;无线配置&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;WIFI名称中不要包含空格，非法命名会导致无线失效&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;dhcpdnsdnsmasq&#34;&gt;DHCP/DNS(Dnsmasq)&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;默认的端口为53&lt;/li&gt;
+&lt;li&gt;取消勾选重绑定保护，不然DNS不会返回解析的内网ip，导致部分校园域名无法访问&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;socat端口转发&#34;&gt;Socat(端口转发)&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;设置远程桌面端口3389为目标端口，目标地址使用PC的192开头private ip，监听端口则为映射端口，协议选择TCP和UDP&lt;/li&gt;
+&lt;li&gt;openwrt管理页面目标地址填写192开头的路由器管理页面地址&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;load-balancing&#34;&gt;Load Balancing&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;对于单线多拨的校园网，在规则处分别将校园网认证页面policy改成wan_only并登录，远程连接地址policy设定为校园网wan_only
+参考：&lt;a href=&#34;https://blog.csdn.net/m0_59496782/article/details/121862378&#34;&gt;拿什么拯救你，我的校园网——校园网优化之单线多拨&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+                
+                
+                
+                
+                
+                    
+                        
+                    
+                        
+                    
+                
+            </item>
         
     </channel>
 </rss>
