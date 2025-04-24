@@ -4,7 +4,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh-CN">
     <title type="text">Bejsernia&#39;s Blog</title>
     <subtitle type="html">MemE 是一个强大且可高度定制的 GoHugo 博客主题，专为个人博客设计。</subtitle>
-    <updated>2025-04-24T20:58:34&#43;08:00</updated>
+    <updated>2025-04-24T21:08:12&#43;08:00</updated>
     <id>https://bejsernia.github.io/</id>
     <link rel="alternate" type="text/html" href="https://bejsernia.github.io/" />
     <link rel="self" type="application/atom&#43;xml" href="https://bejsernia.github.io/atom.xml" />
@@ -214,7 +214,7 @@ Domain就是在&lt;a href=&#34;duckdns.org&#34;&gt;DuckDNS&lt;/a&gt;注册的子
             <title type="text">HiST</title>
             <link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/hist/" />
             <id>https://bejsernia.github.io/posts/hist/</id>
-            <updated>2025-04-24T20:56:38&#43;08:00</updated>
+            <updated>2025-04-24T21:04:36&#43;08:00</updated>
             <published>2025-03-11T14:39:00&#43;08:00</published>
             <author>
                     <name>Bejsernia</name>
