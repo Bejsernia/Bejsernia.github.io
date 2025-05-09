@@ -123,35 +123,7 @@
 
     <body>
         <div class="container">
-            <script>
-document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('pre').forEach((preTag) => {
-    const button = document.createElement('button');
-    button.innerText = '复制';
-    button.className = 'copy-btn';
-    preTag.style.position = 'relative';
-    button.style.position = 'absolute';
-    button.style.right = '10px';
-    button.style.top = '10px';
-
-    preTag.appendChild(button);
-
-    const code = preTag.querySelector('code');
-    const clipboard = new ClipboardJS(button, {
-      text: function () {
-        return code ? code.innerText : '';
-      }
-    });
-
-    clipboard.on('success', function () {
-      button.innerText = '已复制';
-      setTimeout(() => (button.innerText = '复制'), 2000);
-    });
-  });
-});
-</script>
-
-
+            
     <header class="header">
         
             <div class="header-wrapper">
@@ -689,7 +661,6 @@ Domain就是在<a href="duckdns.org">DuckDNS</a>注册的子域名</p>
             
         </div>
     </footer>
-
 
         </div>
         
