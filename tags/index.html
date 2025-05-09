@@ -59,7 +59,7 @@
         "@context": "https://schema.org",
         "@type": "WebPage",
         "datePublished": "1969-07-20T20:17:43+00:00",
-        "dateModified": "2025-04-24T21:04:36+08:00",
+        "dateModified": "2025-05-09T16:46:53+08:00",
         "url": "https://bejsernia.github.io/tags/",
         "name": "Tags",
         "description": "MemE 是一个强大且可高度定制的 GoHugo 博客主题，专为个人博客设计。",
@@ -107,7 +107,35 @@
 
     <body>
         <div class="container">
-            
+            <script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('pre').forEach((preTag) => {
+    const button = document.createElement('button');
+    button.innerText = '复制';
+    button.className = 'copy-btn';
+    preTag.style.position = 'relative';
+    button.style.position = 'absolute';
+    button.style.right = '10px';
+    button.style.top = '10px';
+
+    preTag.appendChild(button);
+
+    const code = preTag.querySelector('code');
+    const clipboard = new ClipboardJS(button, {
+      text: function () {
+        return code ? code.innerText : '';
+      }
+    });
+
+    clipboard.on('success', function () {
+      button.innerText = '已复制';
+      setTimeout(() => (button.innerText = '复制'), 2000);
+    });
+  });
+});
+</script>
+
+
     <header class="header">
         
             <div class="header-wrapper">
@@ -205,7 +233,16 @@
                     
                     
                     
-                        <a href="../tags/2025/" class="tag-cloud-item" style="font-size: 1.9463946303571862em">2025</a>
+                        <a href="../tags/2025/" class="tag-cloud-item" style="font-size: 2.292029674220179em">2025</a>
+                    
+                
+                    
+                    
+                    
+                    
+                    
+                    
+                        <a href="../tags/github/" class="tag-cloud-item" style="font-size: 1em">Github</a>
                     
                 
                     
@@ -223,6 +260,15 @@
                     
                     
                     
+                        <a href="../tags/x11/" class="tag-cloud-item" style="font-size: 1em">X11</a>
+                    
+                
+                    
+                    
+                    
+                    
+                    
+                    
                         <a href="../tags/%E6%88%91%E7%9A%84%E8%AE%BA%E6%96%87/" class="tag-cloud-item" style="font-size: 1em">我的论文</a>
                     
                 
@@ -232,7 +278,25 @@
                     
                     
                     
-                        <a href="../tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="tag-cloud-item" style="font-size: 1.9463946303571862em">深度学习</a>
+                        <a href="../tags/%E6%95%B0%E6%8D%AE%E6%81%A2%E5%A4%8D/" class="tag-cloud-item" style="font-size: 1em">数据恢复</a>
+                    
+                
+                    
+                    
+                    
+                    
+                    
+                    
+                        <a href="../tags/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AE%A1%E7%90%86/" class="tag-cloud-item" style="font-size: 1.6460148371100896em">服务器管理</a>
+                    
+                
+                    
+                    
+                    
+                    
+                    
+                    
+                        <a href="../tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="tag-cloud-item" style="font-size: 1.6460148371100896em">深度学习</a>
                     
                 
                     
