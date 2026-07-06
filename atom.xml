@@ -1,1554 +1,1508 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-
-<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh-CN">
-    <title type="text">Bejsernia&#39;s Blog</title>
-    <subtitle type="html">MemE 是一个强大且可高度定制的 GoHugo 博客主题，专为个人博客设计。</subtitle>
-    <updated>2026-07-06T16:13:42&#43;08:00</updated>
-    <id>https://bejsernia.github.io/</id>
-    <link rel="alternate" type="text/html" href="https://bejsernia.github.io/" />
-    <link rel="self" type="application/atom&#43;xml" href="https://bejsernia.github.io/atom.xml" />
-    <author>
-            <name>Bejsernia</name>
-            <uri>https://bejsernia.github.io/</uri>
-            
-                <email>kvis934@gmail.com</email>
-            </author>
-    <rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights>
-    <generator uri="https://gohugo.io/" version="0.92.2">Hugo</generator>
-        <entry>
-            <title type="text">OpenWrt 主路由 &#43; iStoreOS 旁路由配置记录及踩坑总结</title>
-            <link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/siderouter/" />
-            <id>https://bejsernia.github.io/posts/siderouter/</id>
-            <updated>2026-07-06T16:13:45&#43;08:00</updated>
-            <published>2026-07-06T15:38:00&#43;08:00</published>
-            <author>
-                    <name>Bejsernia</name>
-                    <uri>https://bejsernia.github.io/</uri>
-                    <email>kvis934@gmail.com</email>
-                    </author>
-            <rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">OpenWrt 主路由 + iStoreOS 旁路由配置记录及踩坑总结 最近重新部署了一下寝室网络，采用 OpenWrt 作为主路由，i……</summary>
-            
-                <content type="html">&lt;h1 id=&#34;openwrt-主路由--istoreos-旁路由配置记录及踩坑总结&#34;&gt;OpenWrt 主路由 + iStoreOS 旁路由配置记录及踩坑总结&lt;/h1&gt;
-&lt;p&gt;最近重新部署了一下寝室网络，采用 &lt;strong&gt;OpenWrt 作为主路由，iStoreOS 作为旁路由&lt;/strong&gt; 的方案。整体配置参考了 James Life Blog 的教程，并结合自己的实际环境进行了调整。&lt;/p&gt;
-&lt;p&gt;原教程：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;a href=&#34;https://jameslifeblog.com/istoreos#toc---2a&#34;&gt;https://jameslifeblog.com/istoreos#toc---2a&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;本文主要记录整个配置流程，以及最后遇到的一个很不小心的 DNS 配置错误&lt;/p&gt;
-&lt;hr&gt;
-&lt;h1 id=&#34;网络拓扑&#34;&gt;网络拓扑&lt;/h1&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;                Internet
-                    │
-                  光猫
-                    │
-          OpenWrt（主路由）
-          LAN：192.168.77.1
-                    │
-              交换机 / LAN
-        ┌──────────┴──────────┐
-        │                     │
-     普通终端             iStoreOS
-                        192.168.77.220
-                     （旁路由模式）
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;整个网络仍然由 OpenWrt 完成：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;PPPoE 拨号&lt;/li&gt;
-&lt;li&gt;DHCP&lt;/li&gt;
-&lt;li&gt;防火墙&lt;/li&gt;
-&lt;li&gt;NAT&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;iStoreOS 仅负责旁路由相关功能，不参与 DHCP。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h1 id=&#34;一openwrt-配置&#34;&gt;一、OpenWrt 配置&lt;/h1&gt;
-&lt;p&gt;保持 OpenWrt 为唯一主路由。&lt;/p&gt;
-&lt;p&gt;主要负责：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;WAN 拨号&lt;/li&gt;
-&lt;li&gt;DHCP 服务&lt;/li&gt;
-&lt;li&gt;DNS（可选）&lt;/li&gt;
-&lt;li&gt;NAT&lt;/li&gt;
-&lt;li&gt;防火墙&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;LAN：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;192.168.77.1/24
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;DHCP 正常开启。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h1 id=&#34;二istoreos-配置&#34;&gt;二、iStoreOS 配置&lt;/h1&gt;
-&lt;p&gt;安装完成后，进入网络向导。&lt;/p&gt;
-&lt;p&gt;选择：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;旁路由模式
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;随后配置：&lt;/p&gt;
-&lt;p&gt;IP：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;192.168.77.220
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;子网掩码：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;255.255.255.0
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;网关：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;192.168.77.1
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;DNS：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;192.168.77.1
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;保存后重启网络。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h1 id=&#34;三为什么主路由-dhcp-列表里没有旁路由&#34;&gt;三、为什么主路由 DHCP 列表里没有旁路由？&lt;/h1&gt;
-&lt;p&gt;这里我一开始以为配置失败了。&lt;/p&gt;
-&lt;p&gt;实际上：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;这是正常现象。&lt;/strong&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;原因很简单：&lt;/p&gt;
-&lt;p&gt;iStoreOS 使用的是 &lt;strong&gt;静态 IP&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;DHCP 客户端列表只显示：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;通过 DHCP 获取 IP 的设备。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;因此：&lt;/p&gt;
-&lt;p&gt;OpenWrt 后台不会出现：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;192.168.77.220
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;但是：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping 192.168.77.220
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;完全正常。&lt;/p&gt;
-&lt;p&gt;如果需要确认：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ip neigh
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;或者：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;arp -n
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;即可查看 ARP 表。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h1 id=&#34;四遇到的问题旁路由无法联网&#34;&gt;四、遇到的问题：旁路由无法联网&lt;/h1&gt;
-&lt;p&gt;配置完成以后：&lt;/p&gt;
-&lt;p&gt;主路由：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping iStoreOS
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;正常。&lt;/p&gt;
-&lt;p&gt;iStoreOS：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping 主路由
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;正常。&lt;/p&gt;
-&lt;p&gt;但是：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping www.baidu.com
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;失败。&lt;/p&gt;
-&lt;p&gt;然而：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping 223.5.5.5
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;正常。&lt;/p&gt;
-&lt;p&gt;说明：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;网络是通的。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;真正的问题：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;DNS。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;hr&gt;
-&lt;h1 id=&#34;五排查-dns&#34;&gt;五、排查 DNS&lt;/h1&gt;
-&lt;p&gt;首先查看：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cat /etc/resolv.conf
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;nameserver 127.0.0.1
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这意味着：&lt;/p&gt;
-&lt;p&gt;iStoreOS 自己作为 DNS。&lt;/p&gt;
-&lt;p&gt;继续检查：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ss -lntup | grep :53
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;结果：&lt;/p&gt;
-&lt;p&gt;没有任何程序监听 53。&lt;/p&gt;
-&lt;p&gt;只有：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;5353
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;对应：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;avahi-daemon&lt;/li&gt;
-&lt;li&gt;wsdd2&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;因此：&lt;/p&gt;
-&lt;p&gt;DNS 请求全部发送到了：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;127.0.0.1
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;但是：&lt;/p&gt;
-&lt;p&gt;本地根本没有 DNS Server。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h1 id=&#34;六继续排查-dnsmasq&#34;&gt;六、继续排查 dnsmasq&lt;/h1&gt;
-&lt;p&gt;查看状态：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;/etc/init.d/dnsmasq status
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;显示：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;running
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;但是：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;logread -e dnsmasq
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;出现：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;bad dhcp-option at line 29 of /var/etc/dnsmasq.conf.cfg01411c
-
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh-CN"><title type="text">Bejsernia's Blog</title><subtitle type="html">MemE 是一个强大且可高度定制的 GoHugo 博客主题，专为个人博客设计。</subtitle><updated>2026-07-06T16:51:33+08:00</updated><id>https://bejsernia.github.io/</id><link rel="alternate" type="text/html" href="https://bejsernia.github.io/"/><link rel="self" type="application/atom+xml" href="https://bejsernia.github.io/atom.xml"/><author><name>Bejsernia</name><uri>https://bejsernia.github.io/</uri><email>kvis934@gmail.com</email></author><rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><generator uri="https://gohugo.io/" version="0.92.2">Hugo</generator><entry><title type="text">Giffgaff申请教程</title><link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/giffgaff/"/><id>https://bejsernia.github.io/posts/giffgaff/</id><updated>2026-07-06T16:51:07+08:00</updated><published>2026-07-06T16:33:36+08:00</published><author><name>Bejsernia</name><uri>https://bejsernia.github.io/</uri><email>kvis934@gmail.com</email></author><rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">Giffgaff 申请教程：实体卡 vs eSIM，国行手机免Root获取激活码全流程 最近整理了一下海外保……</summary><content type="html">&lt;h1 id="giffgaff-申请教程实体卡-vs-esim国行手机免root获取激活码全流程">Giffgaff 申请教程：实体卡 vs eSIM，国行手机免Root获取激活码全流程&lt;/h1>
+&lt;p>最近整理了一下海外保号卡的方案，选择了英国运营商 &lt;strong>Giffgaff&lt;/strong> 作为长期保号卡。整体内容参考了 B 站/YouTube 上的一期视频教程，并结合自己的实际操作补充了一些细节，尤其是国行手机（不支持原生 eSIM）如何免 Root 获取激活码的部分。&lt;/p>
+&lt;p>原视频：&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;a href="https://www.youtube.com/watch?v=kcmAnZNXjsg">https://www.youtube.com/watch?v=kcmAnZNXjsg&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;p>本文主要记录 Giffgaff 是什么、实体卡和 eSIM 该怎么选、申请流程，以及国行手机的完整解决方案。&lt;/p>
+&lt;hr>
+&lt;h1 id="一giffgaff-是什么">一、Giffgaff 是什么&lt;/h1>
+&lt;p>Giffgaff 是英国的一家虚拟运营商（MVNO），依托 O2 的网络运行。它之所以被广泛用作海外保号卡，主要是因为：&lt;/p>
+&lt;ul>
+&lt;li>号码为英国 +44 号段，属于真实运营商号码，收验证码稳定，不容易被平台风控拦截；&lt;/li>
+&lt;li>保号成本低，充值一次余额后，只要 180 天内有过消费或充值行为，余额和号码有效期就会自动延长；&lt;/li>
+&lt;li>支持国内多币种信用卡（VISA / Mastercard）远程付款购买和续费，不需要人在英国。&lt;/li>
+&lt;/ul>
+&lt;p>需要注意的是，不建议用来给国内 +86 号码打电话或发短信，国内运营商通常会拦截境外号码的呼叫和短信，还有触发反诈风控导致本机号码被停用的风险。&lt;/p>
+&lt;hr>
+&lt;h1 id="二实体卡还是-esim现状对比">二、实体卡还是 eSIM？现状对比&lt;/h1>
+&lt;h2 id="1实体卡sim-card">1、实体卡（SIM Card）&lt;/h2>
+&lt;p>优点：&lt;/p>
+&lt;ul>
+&lt;li>兼容性最好，任何支持标准 SIM 卡槽的手机都能用；&lt;/li>
+&lt;li>申请流程简单，官网直接下单即可。&lt;/li>
+&lt;/ul>
+&lt;p>缺点：&lt;/p>
+&lt;ul>
+&lt;li>需要占用一个实体卡槽；&lt;/li>
+&lt;li>如果手机卡槽有限（比如已经插了主力号码卡），会比较占用资源。&lt;/li>
+&lt;/ul>
+&lt;h2 id="2esim">2、eSIM&lt;/h2>
+&lt;p>优点：&lt;/p>
+&lt;ul>
+&lt;li>不占用实体卡槽，方便和主力号码共存；&lt;/li>
+&lt;li>适合本身就有闲置 eSIM 卡槽的手机。&lt;/li>
+&lt;/ul>
+&lt;p>缺点：&lt;/p>
+&lt;ul>
+&lt;li>Giffgaff &lt;strong>不提供 eSIM 二维码&lt;/strong>，只能通过官方 App 把 eSIM 配置文件直接下载安装到手机里；&lt;/li>
+&lt;li>App 在申请或换卡时会检测当前设备是否原生支持 eSIM，&lt;strong>国行设备大多数没有这个功能&lt;/strong>，会导致无法通过官方渠道申请。&lt;/li>
+&lt;/ul>
+&lt;p>结论：如果是海外版机型、原生支持 eSIM，直接走官方 App 转换即可；如果是国行手机，需要用下面提到的“曲线救国”方案。&lt;/p>
+&lt;hr>
+&lt;h1 id="三实体卡申请与激活流程">三、实体卡申请与激活流程&lt;/h1>
+&lt;ol>
+&lt;li>在申请前，浏览器先清空缓存并重启，建议使用无痕模式，打开激活页面，输入卡片背面的 6 位激活码，点击激活。&lt;/li>
+&lt;li>首次充值建议选择约 10 英镑档位，使用国内多币种信用卡（VISA / Mastercard）支付；如果没有信用卡，也可以通过第三方渠道购买充值卡兑换码来激活。&lt;/li>
+&lt;li>填写姓名（建议填写现实中存在的英文名）和地址（可以用地图工具搜一个英国的地址）。&lt;/li>
+&lt;li>提交订单后，系统会自动分配一个 +44 开头的号码。如果对分配到的号码不满意，可以在个人中心里重新获取一个新号码。&lt;/li>
+&lt;li>激活一般需要 30 分钟到几小时，最慢不超过 24 小时，激活成功后账户会显示余额，同时也会收到邮件通知。插卡等待信号即可正常使用。&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h1 id="四国行手机不支持原生-esim免-root-获取-esim-的思路">四、国行手机（不支持原生 eSIM）免 Root 获取 eSIM 的思路&lt;/h1>
+&lt;p>对于国行设备或者一些不支持原生 eSIM 的老设备，官方 App 的检测会直接拦住申请入口。目前比较可行的思路有两类：&lt;/p>
+&lt;h2 id="1借助外置-esim-转接设备重点">1、借助外置 eSIM 转接设备(重点)&lt;/h2>
+&lt;p>通过类似 X-eSIM 这类外接硬件，把 eSIM 配置文件写入到一张可插拔的小白卡里，再插入普通手机的卡槽使用，相当于把&amp;quot;eSIM&amp;quot;变成了&amp;quot;实体卡&amp;quot;的形态，绕开了设备本身是否支持 eSIM 的限制。这也是视频里提到的主要方案之一。&lt;/p>
+&lt;p>▸ 元萝卜下载地址：https://github.com/Katana-Official/SPatch-Update/releases&lt;/p>
+&lt;p>▸ HookEuicc下载地址：https://github.com/Unicorn369/HookEuicc/releases&lt;/p>
+&lt;p>▸ Giffgaff下载地址：https://www.apkmirror.com/apk/giffgaff-limited/my-giffgaff/giffgaff-19-12-0-release/giffgaff-19-12-0-android-apk-download/&lt;/p>
+&lt;p>▸ Via浏览器下载地址：https://viayoo.com/zh-cn/&lt;/p>
+&lt;h3 id="小白卡">小白卡&lt;/h3>
+&lt;p>拼多多上可以用esim或者小白卡之类的关键词找到，大概20rmb一张，写入最好使用Android手机&lt;/p>
+&lt;p>▸ 写入软件EasyEUICC下载地址：https://easyeuicc.com/&lt;/p>
+&lt;h3 id="具体流程">具体流程&lt;/h3>
+&lt;ol>
+&lt;li>在安卓手机上关闭手机管家上的应用安全检查&lt;/li>
+&lt;li>安装元萝卜，然后在里面安装HookEuicc，Giffgaff和Via&lt;/li>
+&lt;li>打开Giffgaff app进行申请，需要用到英国地址，信用卡。英国地址可以用&lt;a href="https://www.meiguodizhi.com/uk-address">英国地址生成器&lt;/a>随便填。预充值需要10€&lt;/li>
+&lt;li>获得esim地址以后在链接前加上&lt;code>LPA:&lt;/code>&lt;/li>
+&lt;li>安卓手机装上小白卡和EasyEUICC并写入&lt;/li>
+&lt;li>收到短信提醒就成功了&lt;/li>
+&lt;/ol>
+&lt;h2 id="2借助抓包接口请求的方式获取配置文件">2、借助抓包/接口请求的方式获取配置文件&lt;/h2>
+&lt;p>核心思路是不依赖手机本身是否支持 eSIM，而是通过接口调试工具（比如 Postman），直接和 Giffgaff 后台通信，拿到 eSIM 的下载链接或 LPA 信息，再转成二维码，用另一台支持 eSIM 的设备或转接硬件完成写入。大致步骤包括：&lt;/p>
+&lt;ol>
+&lt;li>下载并安装接口调试工具，导入对应的请求配置；&lt;/li>
+&lt;li>使用 Giffgaff 账号完成授权登录（Giffgaff 采用 OAuth 2.0 方式登录）；&lt;/li>
+&lt;li>依次执行获取 eSIM 信息、获取下载令牌、生成二维码的请求；&lt;/li>
+&lt;li>用支持 eSIM 的设备或外置转接硬件扫码写入。&lt;/li>
+&lt;/ol>
+&lt;p>这类方法对操作有一定门槛，需要自己替换脚本里的验证信息，建议先在测试环境或者不重要的号码上试一遍流程，避免误操作导致原卡失效。&lt;/p>
+&lt;blockquote>
+&lt;p>提示：无论哪种方式，一旦实体卡成功转换为 eSIM，原来的实体卡会立刻失效，且换卡通常需要老卡本身能接收验证码，操作前最好确认好当前卡是否还能正常收发短信。&lt;/p>
+&lt;/blockquote>
+&lt;hr>
+&lt;h1 id="五保号技巧总结">五、保号技巧总结&lt;/h1>
+&lt;ol>
+&lt;li>&lt;strong>半年保号&lt;/strong>：账户余额和号码有效期与消费/充值行为绑定，只要在 180 天内有过一次消费或充值，就会自动延长有效期，不需要频繁操作。&lt;/li>
+&lt;li>&lt;strong>不要用来联系国内号码&lt;/strong>：国内运营商对境外号码的拦截和风控比较严格，容易导致误伤停号。&lt;/li>
+&lt;li>&lt;strong>收验证码前确认信号正常&lt;/strong>：可以先发一条测试短信到官方号码，确认能收到回复，说明卡片状态正常。&lt;/li>
+&lt;li>&lt;strong>换号不满意可重新分配&lt;/strong>：个人中心里有单独的换号入口，如果分配到的号码不喜欢或有使用记录，可以再次随机获取。&lt;/li>
+&lt;li>&lt;strong>国行设备提前规划&lt;/strong>：如果确定要长期使用，且手机不支持原生 eSIM，建议提前想清楚是走外置转接硬件的路线，还是保留实体卡形态，避免中途反复折腾导致原卡失效。&lt;/li>
+&lt;/ol>
+&lt;p>&lt;strong>保号可以发送短信到号码：&lt;code>7724284613&lt;/code>&lt;/strong> 记得&lt;code>+44&lt;/code>&lt;/p>
+&lt;hr>
+&lt;h1 id="总结">总结&lt;/h1>
+&lt;p>Giffgaff 作为海外保号卡的性价比确实很高，核心优势就是真实运营商号码 + 低保号成本 + 国内信用卡远程购买。整体申请流程本身并不复杂，麻烦的地方主要集中在：&lt;/p>
+&lt;ul>
+&lt;li>国行/不支持原生 eSIM 的设备无法直接走官方 App 完成 eSIM 申请；&lt;/li>
+&lt;li>需要额外借助外置硬件或接口调试工具来完成转换。&lt;/li>
+&lt;/ul>
+&lt;p>如果只是想要一个能收验证码的海外号码，且手机卡槽有富余，直接走实体卡申请是最省心的方案；只有在确实需要释放卡槽、想用 eSIM 形态时，才有必要研究上面提到的进阶方法。&lt;/p></content><category scheme="https://bejsernia.github.io/categories/%E6%B5%B7%E5%A4%96%E6%9C%8D%E5%8A%A1/" term="海外服务" label="海外服务"/><category scheme="https://bejsernia.github.io/tags/giffgaff/" term="Giffgaff" label="Giffgaff"/><category scheme="https://bejsernia.github.io/tags/sim%E5%8D%A1/" term="SIM卡" label="SIM卡"/><category scheme="https://bejsernia.github.io/tags/esim/" term="eSIM" label="eSIM"/><category scheme="https://bejsernia.github.io/tags/%E4%BF%9D%E5%8F%B7/" term="保号" label="保号"/><category scheme="https://bejsernia.github.io/tags/2026/" term="2026" label="2026"/></entry><entry><title type="text">Hugo</title><link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/hugo/"/><id>https://bejsernia.github.io/posts/hugo/</id><updated>2026-07-06T16:36:49+08:00</updated><published>2026-07-06T16:29:41+08:00</published><author><name>Bejsernia</name><uri>https://bejsernia.github.io/</uri><email>kvis934@gmail.com</email></author><rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">Hugo Blog Deployment Notes (submodule version) 项目结构说明 本博客采用 Hugo + Git submodule 部署方式： Hugo_page/ └── bejsernia-blog/ ├── content/ # Markdown 博客源文件……</summary><content type="html">&lt;h1 id="hugo-blog-deployment-notes-submodule-version">Hugo Blog Deployment Notes (submodule version)&lt;/h1>
+&lt;h2 id="项目结构说明">项目结构说明&lt;/h2>
+&lt;p>本博客采用 Hugo + Git submodule 部署方式：&lt;/p>
+&lt;pre tabindex="0">&lt;code>Hugo_page/
+└── bejsernia-blog/
+├── content/ # Markdown 博客源文件（写作区）
+├── themes/meme/ # 主题（git submodule）
+├── public/ # Hugo build 输出（git submodule → GitHub Pages repo）
+├── config.toml # Hugo 配置
+└── deploy.sh # 一键部署脚本
+&lt;/code>&lt;/pre>&lt;h2 id="submodule-说明">Submodule 说明&lt;/h2>
+&lt;ol>
+&lt;li>主题 submodule&lt;/li>
+&lt;/ol>
+&lt;pre tabindex="0">&lt;code>themes/meme → https://github.com/reuixiy/hugo-theme-meme.git
+&lt;/code>&lt;/pre>&lt;ol start="2">
+&lt;li>网站输出 submodule（关键）&lt;/li>
+&lt;/ol>
+&lt;pre tabindex="0">&lt;code>public → https://github.com/Bejsernia/Bejsernia.github.io.git
+&lt;/code>&lt;/pre>&lt;p>说明：
+GitHub Pages 实际部署的是 public repo 的内容，而不是 Hugo 源仓库。&lt;/p>
+&lt;hr>
+&lt;h2 id="-创建新博客hugo-new">🆕 创建新博客（Hugo new）&lt;/h2>
+&lt;h3 id="1-创建新文章">1. 创建新文章&lt;/h3>
+&lt;p>进入项目根目录：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="nb">cd&lt;/span> bejsernia-blog
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>执行：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">hugo new posts/your-post-name.md
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="2-生成文件位置">2. 生成文件位置&lt;/h3>
+&lt;p>Hugo 会在以下路径生成新文件：&lt;/p>
+&lt;pre tabindex="0">&lt;code>content/posts/your-post-name.md
+&lt;/code>&lt;/pre>&lt;h3 id="3-编辑文章">3. 编辑文章&lt;/h3>
+&lt;p>用 Markdown 写内容，例如：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-markdown" data-lang="markdown">---
+title: &amp;#34;My New Post&amp;#34;
+date: 2026-07-06T12:00:00+08:00
+draft: true
+---
+正文内容写在这里...
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="-注意-draft-参数">⚠️ 注意 draft 参数&lt;/h3>
+&lt;ul>
+&lt;li>draft: true → 本地可见，线上不会发布&lt;/li>
+&lt;li>draft: false → 会被发布&lt;/li>
+&lt;/ul>
+&lt;p>或者构建时用：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">hugo -D &lt;span class="c1"># 包含 draft&lt;/span>
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h2 id="-正确发布流程已自动化">🚀 正确发布流程（已自动化）&lt;/h2>
+&lt;p>写完文章后只需要执行：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">./deploy.sh
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>脚本会自动完成：&lt;/p>
+&lt;h3 id="step-1-构建网站">Step 1: 构建网站&lt;/h3>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">hugo --gc --minify
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>生成静态文件到：&lt;/p>
+&lt;pre tabindex="0">&lt;code>public/
+&lt;/code>&lt;/pre>&lt;hr>
+&lt;h3 id="step-2-更新-github-pages-repo">Step 2: 更新 GitHub Pages repo&lt;/h3>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="nb">cd&lt;/span> public
+git add -A
+git commit -m &lt;span class="s2">&amp;#34;update site&amp;#34;&lt;/span>
+git push origin main
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h3 id="step-3-更新-submodule-指针">Step 3: 更新 submodule 指针&lt;/h3>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="nb">cd&lt;/span> ..
+git add public
+git commit -m &lt;span class="s2">&amp;#34;update submodule pointer&amp;#34;&lt;/span>
+git push origin main
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h2 id="github-pages-工作原理">GitHub Pages 工作原理&lt;/h2>
+&lt;p>GitHub Pages 只关心：&lt;/p>
+&lt;pre tabindex="0">&lt;code>public repo 的最新 commit
+&lt;/code>&lt;/pre>&lt;p>因此必须保证：&lt;/p>
+&lt;ol>
+&lt;li>public repo 已 push&lt;/li>
+&lt;li>主 repo 已更新 submodule pointer&lt;/li>
+&lt;/ol>
+&lt;p>否则网站不会更新&lt;/p>
+&lt;hr>
+&lt;h2 id="常见问题">常见问题&lt;/h2>
+&lt;h3 id="页面没有更新">页面没有更新&lt;/h3>
+&lt;p>通常原因：&lt;/p>
+&lt;ul>
+&lt;li>只运行 hugo，没有 push public&lt;/li>
+&lt;li>public 更新了，但没有更新 submodule pointer&lt;/li>
+&lt;/ul>
+&lt;h3 id="忘记提交-public">忘记提交 public&lt;/h3>
+&lt;p>必须执行：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="nb">cd&lt;/span> public
+git add -A
+git commit -m &lt;span class="s2">&amp;#34;update&amp;#34;&lt;/span>
+git push
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="submodule-未同步">submodule 未同步&lt;/h3>
+&lt;p>必须在主仓库执行：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">git add public
+git commit
+git push
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h2 id="快速手动恢复流程">快速手动恢复流程&lt;/h2>
+&lt;p>如果 deploy.sh 出问题，可以手动执行：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">hugo --gc --minify
+&lt;span class="nb">cd&lt;/span> public
+git add -A
+git commit -m &lt;span class="s2">&amp;#34;update site&amp;#34;&lt;/span>
+git push
+&lt;span class="nb">cd&lt;/span> ..
+git add public
+git commit -m &lt;span class="s2">&amp;#34;update submodule&amp;#34;&lt;/span>
+git push
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h2 id="推荐习惯">推荐习惯&lt;/h2>
+&lt;p>每次更新博客只做一件事：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">./deploy.sh
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>不要直接手动修改 public（除非用于调试）&lt;/p>
+&lt;hr>
+&lt;h2 id="架构总结">架构总结&lt;/h2>
+&lt;pre tabindex="0">&lt;code>Markdown(content/)
+↓
+Hugo build
+↓
+public (static site)
+↓
+GitHub Pages (Bejsernia.github.io)
+&lt;/code>&lt;/pre>&lt;hr></content><category scheme="https://bejsernia.github.io/categories/%E7%BD%91%E7%AB%99/" term="网站" label="网站"/><category scheme="https://bejsernia.github.io/tags/hugo/" term="Hugo" label="Hugo"/><category scheme="https://bejsernia.github.io/tags/github/" term="Github" label="Github"/><category scheme="https://bejsernia.github.io/tags/%E7%BD%91%E7%AB%99/" term="网站" label="网站"/><category scheme="https://bejsernia.github.io/tags/%E5%8D%9A%E5%AE%A2/" term="博客" label="博客"/><category scheme="https://bejsernia.github.io/tags/2026/" term="2026" label="2026"/></entry><entry><title type="text">OpenWrt 主路由 + iStoreOS 旁路由配置记录及踩坑总结</title><link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/siderouter/"/><id>https://bejsernia.github.io/posts/siderouter/</id><updated>2026-07-06T16:13:45+08:00</updated><published>2026-07-06T15:38:00+08:00</published><author><name>Bejsernia</name><uri>https://bejsernia.github.io/</uri><email>kvis934@gmail.com</email></author><rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">OpenWrt 主路由 + iStoreOS 旁路由配置记录及踩坑总结 最近重新部署了一下寝室网络，采用 OpenWrt 作为主路由，i……</summary><content type="html">&lt;h1 id="openwrt-主路由--istoreos-旁路由配置记录及踩坑总结">OpenWrt 主路由 + iStoreOS 旁路由配置记录及踩坑总结&lt;/h1>
+&lt;p>最近重新部署了一下寝室网络，采用 &lt;strong>OpenWrt 作为主路由，iStoreOS 作为旁路由&lt;/strong> 的方案。整体配置参考了 James Life Blog 的教程，并结合自己的实际环境进行了调整。&lt;/p>
+&lt;p>原教程：&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;a href="https://jameslifeblog.com/istoreos#toc---2a">https://jameslifeblog.com/istoreos#toc---2a&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;p>本文主要记录整个配置流程，以及最后遇到的一个很不小心的 DNS 配置错误&lt;/p>
+&lt;hr>
+&lt;h1 id="网络拓扑">网络拓扑&lt;/h1>
+&lt;pre tabindex="0">&lt;code> Internet
+│
+光猫
+│
+OpenWrt（主路由）
+LAN：192.168.77.1
+│
+交换机 / LAN
+┌──────────┴──────────┐
+│ │
+普通终端 iStoreOS
+192.168.77.220
+（旁路由模式）
+&lt;/code>&lt;/pre>&lt;p>整个网络仍然由 OpenWrt 完成：&lt;/p>
+&lt;ul>
+&lt;li>PPPoE 拨号&lt;/li>
+&lt;li>DHCP&lt;/li>
+&lt;li>防火墙&lt;/li>
+&lt;li>NAT&lt;/li>
+&lt;/ul>
+&lt;p>iStoreOS 仅负责旁路由相关功能，不参与 DHCP。&lt;/p>
+&lt;hr>
+&lt;h1 id="一openwrt-配置">一、OpenWrt 配置&lt;/h1>
+&lt;p>保持 OpenWrt 为唯一主路由。&lt;/p>
+&lt;p>主要负责：&lt;/p>
+&lt;ul>
+&lt;li>WAN 拨号&lt;/li>
+&lt;li>DHCP 服务&lt;/li>
+&lt;li>DNS（可选）&lt;/li>
+&lt;li>NAT&lt;/li>
+&lt;li>防火墙&lt;/li>
+&lt;/ul>
+&lt;p>LAN：&lt;/p>
+&lt;pre tabindex="0">&lt;code>192.168.77.1/24
+&lt;/code>&lt;/pre>&lt;p>DHCP 正常开启。&lt;/p>
+&lt;hr>
+&lt;h1 id="二istoreos-配置">二、iStoreOS 配置&lt;/h1>
+&lt;p>安装完成后，进入网络向导。&lt;/p>
+&lt;p>选择：&lt;/p>
+&lt;pre tabindex="0">&lt;code>旁路由模式
+&lt;/code>&lt;/pre>&lt;p>随后配置：&lt;/p>
+&lt;p>IP：&lt;/p>
+&lt;pre tabindex="0">&lt;code>192.168.77.220
+&lt;/code>&lt;/pre>&lt;p>子网掩码：&lt;/p>
+&lt;pre tabindex="0">&lt;code>255.255.255.0
+&lt;/code>&lt;/pre>&lt;p>网关：&lt;/p>
+&lt;pre tabindex="0">&lt;code>192.168.77.1
+&lt;/code>&lt;/pre>&lt;p>DNS：&lt;/p>
+&lt;pre tabindex="0">&lt;code>192.168.77.1
+&lt;/code>&lt;/pre>&lt;p>保存后重启网络。&lt;/p>
+&lt;hr>
+&lt;h1 id="三为什么主路由-dhcp-列表里没有旁路由">三、为什么主路由 DHCP 列表里没有旁路由？&lt;/h1>
+&lt;p>这里我一开始以为配置失败了。&lt;/p>
+&lt;p>实际上：&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>这是正常现象。&lt;/strong>&lt;/p>
+&lt;/blockquote>
+&lt;p>原因很简单：&lt;/p>
+&lt;p>iStoreOS 使用的是 &lt;strong>静态 IP&lt;/strong>。&lt;/p>
+&lt;p>DHCP 客户端列表只显示：&lt;/p>
+&lt;blockquote>
+&lt;p>通过 DHCP 获取 IP 的设备。&lt;/p>
+&lt;/blockquote>
+&lt;p>因此：&lt;/p>
+&lt;p>OpenWrt 后台不会出现：&lt;/p>
+&lt;pre tabindex="0">&lt;code>192.168.77.220
+&lt;/code>&lt;/pre>&lt;p>但是：&lt;/p>
+&lt;pre tabindex="0">&lt;code>ping 192.168.77.220
+&lt;/code>&lt;/pre>&lt;p>完全正常。&lt;/p>
+&lt;p>如果需要确认：&lt;/p>
+&lt;pre tabindex="0">&lt;code>ip neigh
+&lt;/code>&lt;/pre>&lt;p>或者：&lt;/p>
+&lt;pre tabindex="0">&lt;code>arp -n
+&lt;/code>&lt;/pre>&lt;p>即可查看 ARP 表。&lt;/p>
+&lt;hr>
+&lt;h1 id="四遇到的问题旁路由无法联网">四、遇到的问题：旁路由无法联网&lt;/h1>
+&lt;p>配置完成以后：&lt;/p>
+&lt;p>主路由：&lt;/p>
+&lt;pre tabindex="0">&lt;code>ping iStoreOS
+&lt;/code>&lt;/pre>&lt;p>正常。&lt;/p>
+&lt;p>iStoreOS：&lt;/p>
+&lt;pre tabindex="0">&lt;code>ping 主路由
+&lt;/code>&lt;/pre>&lt;p>正常。&lt;/p>
+&lt;p>但是：&lt;/p>
+&lt;pre tabindex="0">&lt;code>ping www.baidu.com
+&lt;/code>&lt;/pre>&lt;p>失败。&lt;/p>
+&lt;p>然而：&lt;/p>
+&lt;pre tabindex="0">&lt;code>ping 223.5.5.5
+&lt;/code>&lt;/pre>&lt;p>正常。&lt;/p>
+&lt;p>说明：&lt;/p>
+&lt;blockquote>
+&lt;p>网络是通的。&lt;/p>
+&lt;/blockquote>
+&lt;p>真正的问题：&lt;/p>
+&lt;blockquote>
+&lt;p>DNS。&lt;/p>
+&lt;/blockquote>
+&lt;hr>
+&lt;h1 id="五排查-dns">五、排查 DNS&lt;/h1>
+&lt;p>首先查看：&lt;/p>
+&lt;pre tabindex="0">&lt;code>cat /etc/resolv.conf
+&lt;/code>&lt;/pre>&lt;p>结果：&lt;/p>
+&lt;pre tabindex="0">&lt;code>nameserver 127.0.0.1
+&lt;/code>&lt;/pre>&lt;p>这意味着：&lt;/p>
+&lt;p>iStoreOS 自己作为 DNS。&lt;/p>
+&lt;p>继续检查：&lt;/p>
+&lt;pre tabindex="0">&lt;code>ss -lntup | grep :53
+&lt;/code>&lt;/pre>&lt;p>结果：&lt;/p>
+&lt;p>没有任何程序监听 53。&lt;/p>
+&lt;p>只有：&lt;/p>
+&lt;pre tabindex="0">&lt;code>5353
+&lt;/code>&lt;/pre>&lt;p>对应：&lt;/p>
+&lt;ul>
+&lt;li>avahi-daemon&lt;/li>
+&lt;li>wsdd2&lt;/li>
+&lt;/ul>
+&lt;p>因此：&lt;/p>
+&lt;p>DNS 请求全部发送到了：&lt;/p>
+&lt;pre tabindex="0">&lt;code>127.0.0.1
+&lt;/code>&lt;/pre>&lt;p>但是：&lt;/p>
+&lt;p>本地根本没有 DNS Server。&lt;/p>
+&lt;hr>
+&lt;h1 id="六继续排查-dnsmasq">六、继续排查 dnsmasq&lt;/h1>
+&lt;p>查看状态：&lt;/p>
+&lt;pre tabindex="0">&lt;code>/etc/init.d/dnsmasq status
+&lt;/code>&lt;/pre>&lt;p>显示：&lt;/p>
+&lt;pre tabindex="0">&lt;code>running
+&lt;/code>&lt;/pre>&lt;p>但是：&lt;/p>
+&lt;pre tabindex="0">&lt;code>logread -e dnsmasq
+&lt;/code>&lt;/pre>&lt;p>出现：&lt;/p>
+&lt;pre tabindex="0">&lt;code>bad dhcp-option at line 29 of /var/etc/dnsmasq.conf.cfg01411c
 FAILED to start up
-
 Instance dnsmasq in a crash loop
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
-&lt;p&gt;dnsmasq 一直启动失败。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h1 id=&#34;七最终找到问题&#34;&gt;七、最终找到问题&lt;/h1&gt;
-&lt;p&gt;查看：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;sed -n &#39;20,35p&#39; /var/etc/dnsmasq.conf.cfg01411c
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;发现：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;dhcp-option=tag:gc_us_proxy,3.192.168.77.220
-
+&lt;/code>&lt;/pre>&lt;p>说明：&lt;/p>
+&lt;p>dnsmasq 一直启动失败。&lt;/p>
+&lt;hr>
+&lt;h1 id="七最终找到问题">七、最终找到问题&lt;/h1>
+&lt;p>查看：&lt;/p>
+&lt;pre tabindex="0">&lt;code>sed -n '20,35p' /var/etc/dnsmasq.conf.cfg01411c
+&lt;/code>&lt;/pre>&lt;p>发现：&lt;/p>
+&lt;pre tabindex="0">&lt;code>dhcp-option=tag:gc_us_proxy,3.192.168.77.220
 dhcp-option=tag:gc_us_proxy,6.192.168.77.220
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里居然写成了：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;3.192.168.77.220
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;正确应该是：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;3,192.168.77.220
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;以及：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;6,192.168.77.220
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;也就是说：&lt;/p&gt;
-&lt;p&gt;我把：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;,
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;误写成了：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;.
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;导致 dnsmasq 无法解析配置文件。&lt;/p&gt;
-&lt;p&gt;最终一直 Crash。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h1 id=&#34;八另一个同样的错误&#34;&gt;八、另一个同样的错误&lt;/h1&gt;
-&lt;p&gt;后来又发现：&lt;/p&gt;
-&lt;p&gt;接口配置里面，&lt;/p&gt;
-&lt;p&gt;我同样把：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;,
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;写成了：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;.
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;导致对应配置也异常。&lt;/p&gt;
-&lt;p&gt;修改后：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;/etc/init.d/dnsmasq restart
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;成功启动。&lt;/p&gt;
-&lt;p&gt;再次检查：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ss -lntup | grep :53
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;已经能够看到：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;dnsmasq
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;监听：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;53
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;随后：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping www.baidu.com
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;恢复正常。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h1 id=&#34;九经验总结&#34;&gt;九、经验总结&lt;/h1&gt;
-&lt;p&gt;整个过程中最容易误判的是：&lt;/p&gt;
-&lt;h2 id=&#34;1dhcp-列表没有旁路由&#34;&gt;1、DHCP 列表没有旁路由&lt;/h2&gt;
-&lt;p&gt;不用担心。&lt;/p&gt;
-&lt;p&gt;只要：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;正常即可。&lt;/p&gt;
-&lt;p&gt;因为静态 IP 不会出现在 DHCP Lease 中。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;2dns-看-resolvconf&#34;&gt;2、DNS 看 resolv.conf&lt;/h2&gt;
-&lt;p&gt;第一时间：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cat /etc/resolv.conf
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如果：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;127.0.0.1
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;一定要继续确认：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;53
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;端口是否真的有 DNS Server。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;3dnsmasq-crash-loop&#34;&gt;3、dnsmasq Crash Loop&lt;/h2&gt;
-&lt;p&gt;最重要的一条命令：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;logread -e dnsmasq
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;基本所有配置错误都会直接指出：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;bad dhcp-option
-
+&lt;/code>&lt;/pre>&lt;p>这里居然写成了：&lt;/p>
+&lt;pre tabindex="0">&lt;code>3.192.168.77.220
+&lt;/code>&lt;/pre>&lt;p>正确应该是：&lt;/p>
+&lt;pre tabindex="0">&lt;code>3,192.168.77.220
+&lt;/code>&lt;/pre>&lt;p>以及：&lt;/p>
+&lt;pre tabindex="0">&lt;code>6,192.168.77.220
+&lt;/code>&lt;/pre>&lt;p>也就是说：&lt;/p>
+&lt;p>我把：&lt;/p>
+&lt;pre tabindex="0">&lt;code>,
+&lt;/code>&lt;/pre>&lt;p>误写成了：&lt;/p>
+&lt;pre tabindex="0">&lt;code>.
+&lt;/code>&lt;/pre>&lt;p>导致 dnsmasq 无法解析配置文件。&lt;/p>
+&lt;p>最终一直 Crash。&lt;/p>
+&lt;hr>
+&lt;h1 id="八另一个同样的错误">八、另一个同样的错误&lt;/h1>
+&lt;p>后来又发现：&lt;/p>
+&lt;p>接口配置里面，&lt;/p>
+&lt;p>我同样把：&lt;/p>
+&lt;pre tabindex="0">&lt;code>,
+&lt;/code>&lt;/pre>&lt;p>写成了：&lt;/p>
+&lt;pre tabindex="0">&lt;code>.
+&lt;/code>&lt;/pre>&lt;p>导致对应配置也异常。&lt;/p>
+&lt;p>修改后：&lt;/p>
+&lt;pre tabindex="0">&lt;code>/etc/init.d/dnsmasq restart
+&lt;/code>&lt;/pre>&lt;p>成功启动。&lt;/p>
+&lt;p>再次检查：&lt;/p>
+&lt;pre tabindex="0">&lt;code>ss -lntup | grep :53
+&lt;/code>&lt;/pre>&lt;p>已经能够看到：&lt;/p>
+&lt;pre tabindex="0">&lt;code>dnsmasq
+&lt;/code>&lt;/pre>&lt;p>监听：&lt;/p>
+&lt;pre tabindex="0">&lt;code>53
+&lt;/code>&lt;/pre>&lt;p>随后：&lt;/p>
+&lt;pre tabindex="0">&lt;code>ping www.baidu.com
+&lt;/code>&lt;/pre>&lt;p>恢复正常。&lt;/p>
+&lt;hr>
+&lt;h1 id="九经验总结">九、经验总结&lt;/h1>
+&lt;p>整个过程中最容易误判的是：&lt;/p>
+&lt;h2 id="1dhcp-列表没有旁路由">1、DHCP 列表没有旁路由&lt;/h2>
+&lt;p>不用担心。&lt;/p>
+&lt;p>只要：&lt;/p>
+&lt;pre tabindex="0">&lt;code>ping
+&lt;/code>&lt;/pre>&lt;p>正常即可。&lt;/p>
+&lt;p>因为静态 IP 不会出现在 DHCP Lease 中。&lt;/p>
+&lt;hr>
+&lt;h2 id="2dns-看-resolvconf">2、DNS 看 resolv.conf&lt;/h2>
+&lt;p>第一时间：&lt;/p>
+&lt;pre tabindex="0">&lt;code>cat /etc/resolv.conf
+&lt;/code>&lt;/pre>&lt;p>如果：&lt;/p>
+&lt;pre tabindex="0">&lt;code>127.0.0.1
+&lt;/code>&lt;/pre>&lt;p>一定要继续确认：&lt;/p>
+&lt;pre tabindex="0">&lt;code>53
+&lt;/code>&lt;/pre>&lt;p>端口是否真的有 DNS Server。&lt;/p>
+&lt;hr>
+&lt;h2 id="3dnsmasq-crash-loop">3、dnsmasq Crash Loop&lt;/h2>
+&lt;p>最重要的一条命令：&lt;/p>
+&lt;pre tabindex="0">&lt;code>logread -e dnsmasq
+&lt;/code>&lt;/pre>&lt;p>基本所有配置错误都会直接指出：&lt;/p>
+&lt;pre tabindex="0">&lt;code>bad dhcp-option
 line xx
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;定位效率非常高。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;4不要直接修改-varetc&#34;&gt;4、不要直接修改 /var/etc/&lt;/h2&gt;
-&lt;p&gt;例如：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;/var/etc/dnsmasq.conf.cfgxxxxx
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这些文件都是自动生成的。&lt;/p&gt;
-&lt;p&gt;真正应该修改的是：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;LuCI 配置&lt;/li&gt;
-&lt;li&gt;UCI 配置&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;否则重启以后修改都会丢失。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h1 id=&#34;总结&#34;&gt;总结&lt;/h1&gt;
-&lt;p&gt;整个旁路由配置其实并不复杂：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;OpenWrt 保持主路由。&lt;/li&gt;
-&lt;li&gt;iStoreOS 选择旁路由模式。&lt;/li&gt;
-&lt;li&gt;配置静态 IP、网关和 DNS。&lt;/li&gt;
-&lt;li&gt;确认 DNS 服务正常运行。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;我这次最大的坑其实不是网络，而是一个非常低级的配置错误：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;把 DHCP Option 中应该使用的逗号（&lt;code&gt;,&lt;/code&gt;）写成了句号（&lt;code&gt;.&lt;/code&gt;）。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;这个错误会导致 dnsmasq 无法启动，而表现出来的现象却只是：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;DNS 无法解析&lt;/li&gt;
-&lt;li&gt;旁路由不能联网&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;/etc/resolv.conf&lt;/code&gt; 指向 &lt;code&gt;127.0.0.1&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;如果以后再遇到类似问题，建议优先检查：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cat /etc/resolv.conf
-
+&lt;/code>&lt;/pre>&lt;p>定位效率非常高。&lt;/p>
+&lt;hr>
+&lt;h2 id="4不要直接修改-varetc">4、不要直接修改 /var/etc/&lt;/h2>
+&lt;p>例如：&lt;/p>
+&lt;pre tabindex="0">&lt;code>/var/etc/dnsmasq.conf.cfgxxxxx
+&lt;/code>&lt;/pre>&lt;p>这些文件都是自动生成的。&lt;/p>
+&lt;p>真正应该修改的是：&lt;/p>
+&lt;ul>
+&lt;li>LuCI 配置&lt;/li>
+&lt;li>UCI 配置&lt;/li>
+&lt;/ul>
+&lt;p>否则重启以后修改都会丢失。&lt;/p>
+&lt;hr>
+&lt;h1 id="总结">总结&lt;/h1>
+&lt;p>整个旁路由配置其实并不复杂：&lt;/p>
+&lt;ol>
+&lt;li>OpenWrt 保持主路由。&lt;/li>
+&lt;li>iStoreOS 选择旁路由模式。&lt;/li>
+&lt;li>配置静态 IP、网关和 DNS。&lt;/li>
+&lt;li>确认 DNS 服务正常运行。&lt;/li>
+&lt;/ol>
+&lt;p>我这次最大的坑其实不是网络，而是一个非常低级的配置错误：&lt;/p>
+&lt;blockquote>
+&lt;p>把 DHCP Option 中应该使用的逗号（&lt;code>,&lt;/code>）写成了句号（&lt;code>.&lt;/code>）。&lt;/p>
+&lt;/blockquote>
+&lt;p>这个错误会导致 dnsmasq 无法启动，而表现出来的现象却只是：&lt;/p>
+&lt;ul>
+&lt;li>DNS 无法解析&lt;/li>
+&lt;li>旁路由不能联网&lt;/li>
+&lt;li>&lt;code>/etc/resolv.conf&lt;/code> 指向 &lt;code>127.0.0.1&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>如果以后再遇到类似问题，建议优先检查：&lt;/p>
+&lt;pre tabindex="0">&lt;code>cat /etc/resolv.conf
 ss -lntup | grep :53
-
 logread -e dnsmasq
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;通常几分钟内就能定位问题。&lt;/p&gt;
-</content>
-            
-            
-            
-            
-            
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/categories/%E7%BD%91%E7%BB%9C/" term="网络" label="网络" />
-                            
-                        
-                    
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/openwrt/" term="OpenWrt" label="OpenWrt" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/istoreos/" term="iStoreOS" label="iStoreOS" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/%E6%97%81%E8%B7%AF%E7%94%B1/" term="旁路由" label="旁路由" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/dns/" term="DNS" label="DNS" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/2026/" term="2026" label="2026" />
-                            
-                        
-                    
-                
-            
-        </entry>
-    
-        <entry>
-            <title type="text">Guru数据恢复邮件记录-2018</title>
-            <link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/gurudatarecovery/" />
-            <id>https://bejsernia.github.io/posts/gurudatarecovery/</id>
-            <updated>2025-05-09T16:26:37&#43;08:00</updated>
-            <published>2025-05-09T16:13:00&#43;08:00</published>
-            <author>
-                    <name>Bejsernia</name>
-                    <uri>https://bejsernia.github.io/</uri>
-                    <email>kvis934@gmail.com</email>
-                    </author>
-            <rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">以下内容整理自前实验室服务器管理员们的邮件： 服务器存储与数据恢复记录（2018-01……</summary>
-            
-                <content type="html">&lt;hr&gt;
-&lt;ul&gt;
-&lt;li&gt;以下内容整理自前实验室服务器管理员们的邮件：&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;服务器存储与数据恢复记录2018-01-12&#34;&gt;服务器存储与数据恢复记录（2018-01-12）&lt;/h2&gt;
-&lt;p&gt;邮件原文来自 hujian5241：&lt;/p&gt;
-&lt;p&gt;我们的 sanzi 服务器外挂 40T 存储和 guru 服务器最新外挂的 8T&lt;em&gt;12 存储为 xfs 格式，guru 自带存储为 1.8T&lt;/em&gt;24，ext4 格式存储。&lt;/p&gt;
-&lt;p&gt;这次数据恢复非常幸运的是 16 年给 guru 装机的时候，装机人员没有成功分区，后来我自己通过 gparted 图形交互界面将 guru 自带存储分为了 ext4 格式。ext2/3/4 格式会 180 天滚动的自动备份多份文件结构表，小沈的 dd 命令会破坏文件结构表等重要数据，并且写了 10G 的数据，虽然相对于 1.8T*24 的整个 raid 来说不算很大，但也损坏了自动备份的 25 份文件结构表中的绝大多数。&lt;/p&gt;
-&lt;p&gt;如果存储容量小，比如我们在测试机上用 1T 硬盘测试的时候，同样用 dd 写了 10G 的数据，就无法恢复了，可能导致所有的结构表的备份都被破坏。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;数据恢复的具体操作步骤&#34;&gt;数据恢复的具体操作步骤&lt;/h2&gt;
-&lt;h3 id=&#34;1-升级-e2fsprogs&#34;&gt;1. 升级 e2fsprogs&lt;/h3&gt;
-&lt;p&gt;由于软件限制的原因，ext4 不支持 16T 以上分区（ext4 格式本身支持），因此先升级 e2fsprogs。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git clone git://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
-&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; e2fsprogs
+&lt;/code>&lt;/pre>&lt;p>通常几分钟内就能定位问题。&lt;/p></content><category scheme="https://bejsernia.github.io/categories/%E7%BD%91%E7%BB%9C/" term="网络" label="网络"/><category scheme="https://bejsernia.github.io/tags/openwrt/" term="OpenWrt" label="OpenWrt"/><category scheme="https://bejsernia.github.io/tags/istoreos/" term="iStoreOS" label="iStoreOS"/><category scheme="https://bejsernia.github.io/tags/%E6%97%81%E8%B7%AF%E7%94%B1/" term="旁路由" label="旁路由"/><category scheme="https://bejsernia.github.io/tags/dns/" term="DNS" label="DNS"/><category scheme="https://bejsernia.github.io/tags/2026/" term="2026" label="2026"/></entry><entry><title type="text">Guru数据恢复邮件记录-2018</title><link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/gurudatarecovery/"/><id>https://bejsernia.github.io/posts/gurudatarecovery/</id><updated>2025-05-09T16:26:37+08:00</updated><published>2025-05-09T16:13:00+08:00</published><author><name>Bejsernia</name><uri>https://bejsernia.github.io/</uri><email>kvis934@gmail.com</email></author><rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">以下内容整理自前实验室服务器管理员们的邮件： 服务器存储与数据恢复记录（2018-01……</summary><content type="html">&lt;hr>
+&lt;ul>
+&lt;li>以下内容整理自前实验室服务器管理员们的邮件：&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="服务器存储与数据恢复记录2018-01-12">服务器存储与数据恢复记录（2018-01-12）&lt;/h2>
+&lt;p>邮件原文来自 hujian5241：&lt;/p>
+&lt;p>我们的 sanzi 服务器外挂 40T 存储和 guru 服务器最新外挂的 8T&lt;em>12 存储为 xfs 格式，guru 自带存储为 1.8T&lt;/em>24，ext4 格式存储。&lt;/p>
+&lt;p>这次数据恢复非常幸运的是 16 年给 guru 装机的时候，装机人员没有成功分区，后来我自己通过 gparted 图形交互界面将 guru 自带存储分为了 ext4 格式。ext2/3/4 格式会 180 天滚动的自动备份多份文件结构表，小沈的 dd 命令会破坏文件结构表等重要数据，并且写了 10G 的数据，虽然相对于 1.8T*24 的整个 raid 来说不算很大，但也损坏了自动备份的 25 份文件结构表中的绝大多数。&lt;/p>
+&lt;p>如果存储容量小，比如我们在测试机上用 1T 硬盘测试的时候，同样用 dd 写了 10G 的数据，就无法恢复了，可能导致所有的结构表的备份都被破坏。&lt;/p>
+&lt;hr>
+&lt;h2 id="数据恢复的具体操作步骤">数据恢复的具体操作步骤&lt;/h2>
+&lt;h3 id="1-升级-e2fsprogs">1. 升级 e2fsprogs&lt;/h3>
+&lt;p>由于软件限制的原因，ext4 不支持 16T 以上分区（ext4 格式本身支持），因此先升级 e2fsprogs。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">git clone git://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
+&lt;span class="nb">cd&lt;/span> e2fsprogs
 ./configure
-make &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; make install
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;hr&gt;
-&lt;h3 id=&#34;2-查找-ext4-格式自动备份的-superblock-所在-block-位置&#34;&gt;2. 查找 ext4 格式自动备份的 superblock 所在 block 位置&lt;/h3&gt;
-&lt;p&gt;命令：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;mke2fs -O 64bit,has_journal,extents,huge_file,flex_bg,uninit_bg,dir_nlink,extra_isize -n /dev/sda5
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;说明：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;-n&lt;/code&gt; 参数必须加，否则是格式化；&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;-O&lt;/code&gt; 后面参数是针对 &amp;gt; 16T ext4 分区；&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;/dev/sda5&lt;/code&gt; 是我们挂载在 &lt;code&gt;/home&lt;/code&gt; 下的分区名称。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;部分输出结果：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;Creating filesystem with 9875249664 4k blocks and 2468814848 inodes
-    Filesystem UUID: dc46c4d8-94ef-4813-ad04-ddb7d5e3f40e
-    Superblock backups stored on blocks:
-    32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208, 
-    4096000, 7962624, 11239424, 20480000, 23887872, 71663616, 78675968, 
-    102400000, 214990848, 512000000, 550731776, 644972544, 1934917632, 
-    2560000000, 3855122432, 5804752896
-&lt;/code&gt;&lt;/pre&gt;&lt;hr&gt;
-&lt;h3 id=&#34;3-磁盘检测校验和修复&#34;&gt;3. 磁盘检测、校验和修复&lt;/h3&gt;
-&lt;p&gt;命令示例：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;e2fsck -b &lt;span class=&#34;m&#34;&gt;20480000&lt;/span&gt; /dev/sda5
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;说明：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;-b 20480000&lt;/code&gt; 是上一步命令中找到的 superblock 备份所在的 block 位置之一；&lt;/li&gt;
-&lt;li&gt;需要挨个试，有的也可能损坏；&lt;/li&gt;
-&lt;li&gt;建议 &lt;strong&gt;不要加 &lt;code&gt;-y&lt;/code&gt; 参数&lt;/strong&gt;，否则会自动修复，无法看到过程中的问题提示；&lt;/li&gt;
-&lt;li&gt;e2fsck 一共 5 个步骤，成功修复过程中没有任何 error 输出。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h3 id=&#34;4-挂载硬盘&#34;&gt;4. 挂载硬盘&lt;/h3&gt;
-&lt;p&gt;命令：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;mount -t ext4 /dev/sda5 /home
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;说明：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;-t ext4&lt;/code&gt;：指定挂载 RAID 的格式为 ext4，别写错。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;杨总的碎碎念&#34;&gt;杨总的碎碎念&lt;/h2&gt;
-&lt;p&gt;Linux 运维水实在非常深，几个工程师也只能说知道一点给点建议（当然也有可能数据恢复风险大，都不敢尝试，也就不愿意讲太多给自己添麻烦）。&lt;/p&gt;
-&lt;p&gt;看来以后：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;至少在对服务器修改架构等操作之前需要备份一下系统&lt;/strong&gt;，提前一天做好就可以；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;对数据的备份需要狡兔三窟&lt;/strong&gt;，最好线上线下都有一份，以减少系统性风险，假如医学楼真起火了呢【乌鸦嘴呸呸呸】；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;代码就更要云笔记存一份&lt;/strong&gt;，非常方便。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&#34;关于百度云备份&#34;&gt;关于百度云备份&lt;/h4&gt;
-&lt;p&gt;百度云备份的话，要不买个年费超级会员吧，年费也只需要 269 元，对容量和传输速度都有很大提升。就相当于买个保险嘛，绝对值得。当然这个账号的管理也要注意，别买了又忘记存。&lt;/p&gt;
-&lt;p&gt;这次撞大运了，今年不发两篇大文章实在说不过去吧 😄😁&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;老江的回复&#34;&gt;老江的回复&lt;/h2&gt;
-&lt;p&gt;我也希望今年实验室能发大文章！大家一块努力！你说的百度云我想想。&lt;/p&gt;
-</content>
-            
-            
-            
-            
-            
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/categories/%E8%AE%B0%E5%BD%95/" term="记录" label="记录" />
-                            
-                        
-                    
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AE%A1%E7%90%86/" term="服务器管理" label="服务器管理" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/%E6%95%B0%E6%8D%AE%E6%81%A2%E5%A4%8D/" term="数据恢复" label="数据恢复" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/2025/" term="2025" label="2025" />
-                            
-                        
-                    
-                
-            
-        </entry>
-    
-        <entry>
-            <title type="text">修复Pangu的X11和图形化界面问题</title>
-            <link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/panguxserver/" />
-            <id>https://bejsernia.github.io/posts/panguxserver/</id>
-            <updated>2025-05-09T16:11:36&#43;08:00</updated>
-            <published>2025-05-09T15:24:10&#43;08:00</published>
-            <author>
-                    <name>Bejsernia</name>
-                    <uri>https://bejsernia.github.io/</uri>
-                    <email>kvis934@gmail.com</email>
-                    </author>
-            <rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">目录 Pangu图形化界面打不开 问题描述 1. 问题情况 查看桌面系统启动报错 查看日志 2. 查看情……</summary>
-            
-                <content type="html">&lt;h2 id=&#34;目录&#34;&gt;目录&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#pangu%E5%9B%BE%E5%BD%A2%E5%8C%96%E7%95%8C%E9%9D%A2%E6%89%93%E4%B8%8D%E5%BC%80&#34;&gt;Pangu图形化界面打不开&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0&#34;&gt;问题描述&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#1-%E9%97%AE%E9%A2%98%E6%83%85%E5%86%B5&#34;&gt;1. 问题情况&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#%E6%9F%A5%E7%9C%8B%E6%A1%8C%E9%9D%A2%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%8A%A5%E9%94%99&#34;&gt;查看桌面系统启动报错&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#%E6%9F%A5%E7%9C%8B%E6%97%A5%E5%BF%97&#34;&gt;查看日志&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#2-%E6%9F%A5%E7%9C%8B%E6%83%85%E5%86%B5&#34;&gt;2. 查看情况&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#%E6%A3%80%E6%9F%A5gdm%E6%8A%A5%E9%94%99&#34;&gt;检查GDM报错&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#3-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95&#34;&gt;3. 解决方法&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90&#34;&gt;问题分析&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4&#34;&gt;解决步骤&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#pangu-x11-forwarding%E5%90%AF%E5%8A%A8%E5%A4%B1%E8%B4%A5&#34;&gt;Pangu X11 Forwarding启动失败&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#1-%E9%97%AE%E9%A2%98%E6%83%85%E5%86%B5-1&#34;&gt;1. 问题情况&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#2-%E6%9F%A5%E7%9C%8B%E6%83%85%E5%86%B5-1&#34;&gt;2. 查看情况&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#%E6%A3%80%E6%9F%A5%E9%85%8D%E7%BD%AE&#34;&gt;检查配置&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/panguxserver/#3-%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95&#34;&gt;3. 解决办法&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;pangu图形化界面打不开&#34;&gt;Pangu图形化界面打不开&lt;/h2&gt;
-&lt;h3 id=&#34;问题描述&#34;&gt;问题描述&lt;/h3&gt;
-&lt;p&gt;2025-05-09&lt;br&gt;
-装卸存储时发现Pangu图形化界面无法启动。一开始怀疑是Docker服务导致的问题，但禁用各种服务后仍未解决；尝试重装&lt;code&gt;gdm3&lt;/code&gt;等组件也无效。&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id=&#34;1-问题情况&#34;&gt;1. 问题情况&lt;/h3&gt;
-&lt;h4 id=&#34;查看桌面系统启动报错&#34;&gt;查看桌面系统启动报错&lt;/h4&gt;
-&lt;p&gt;运行以下命令：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;systemctl status gdm3
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;报错信息：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;● gdm.service - GNOME Display Manager
-    Loaded: loaded (/lib/systemd/system/gdm.service; static)
-    Active: active (running) since Fri 2025-05-09 13:30:26 CST; 38min ago
-    Process: 3788 ExecStartPre=/usr/share/gdm/generate-config (code=exited, status=0/SUCCESS)
-   Main PID: 3849 (gdm3)
-     Tasks: 3 (limit: 629145)
-    Memory: 5.7M
-       CPU: 609ms
-    CGroup: /system.slice/gdm.service
-           └─3849 /usr/sbin/gdm3
-
+make &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> make install
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h3 id="2-查找-ext4-格式自动备份的-superblock-所在-block-位置">2. 查找 ext4 格式自动备份的 superblock 所在 block 位置&lt;/h3>
+&lt;p>命令：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">mke2fs -O 64bit,has_journal,extents,huge_file,flex_bg,uninit_bg,dir_nlink,extra_isize -n /dev/sda5
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>说明：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>-n&lt;/code> 参数必须加，否则是格式化；&lt;/li>
+&lt;li>&lt;code>-O&lt;/code> 后面参数是针对 &amp;gt; 16T ext4 分区；&lt;/li>
+&lt;li>&lt;code>/dev/sda5&lt;/code> 是我们挂载在 &lt;code>/home&lt;/code> 下的分区名称。&lt;/li>
+&lt;/ul>
+&lt;p>部分输出结果：&lt;/p>
+&lt;pre tabindex="0">&lt;code>Creating filesystem with 9875249664 4k blocks and 2468814848 inodes
+Filesystem UUID: dc46c4d8-94ef-4813-ad04-ddb7d5e3f40e
+Superblock backups stored on blocks:
+32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208,
+4096000, 7962624, 11239424, 20480000, 23887872, 71663616, 78675968,
+102400000, 214990848, 512000000, 550731776, 644972544, 1934917632,
+2560000000, 3855122432, 5804752896
+&lt;/code>&lt;/pre>&lt;hr>
+&lt;h3 id="3-磁盘检测校验和修复">3. 磁盘检测、校验和修复&lt;/h3>
+&lt;p>命令示例：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">e2fsck -b &lt;span class="m">20480000&lt;/span> /dev/sda5
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>说明：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>-b 20480000&lt;/code> 是上一步命令中找到的 superblock 备份所在的 block 位置之一；&lt;/li>
+&lt;li>需要挨个试，有的也可能损坏；&lt;/li>
+&lt;li>建议 &lt;strong>不要加 &lt;code>-y&lt;/code> 参数&lt;/strong>，否则会自动修复，无法看到过程中的问题提示；&lt;/li>
+&lt;li>e2fsck 一共 5 个步骤，成功修复过程中没有任何 error 输出。&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h3 id="4-挂载硬盘">4. 挂载硬盘&lt;/h3>
+&lt;p>命令：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">mount -t ext4 /dev/sda5 /home
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>说明：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>-t ext4&lt;/code>：指定挂载 RAID 的格式为 ext4，别写错。&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="杨总的碎碎念">杨总的碎碎念&lt;/h2>
+&lt;p>Linux 运维水实在非常深，几个工程师也只能说知道一点给点建议（当然也有可能数据恢复风险大，都不敢尝试，也就不愿意讲太多给自己添麻烦）。&lt;/p>
+&lt;p>看来以后：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>至少在对服务器修改架构等操作之前需要备份一下系统&lt;/strong>，提前一天做好就可以；&lt;/li>
+&lt;li>&lt;strong>对数据的备份需要狡兔三窟&lt;/strong>，最好线上线下都有一份，以减少系统性风险，假如医学楼真起火了呢【乌鸦嘴呸呸呸】；&lt;/li>
+&lt;li>&lt;strong>代码就更要云笔记存一份&lt;/strong>，非常方便。&lt;/li>
+&lt;/ul>
+&lt;h4 id="关于百度云备份">关于百度云备份&lt;/h4>
+&lt;p>百度云备份的话，要不买个年费超级会员吧，年费也只需要 269 元，对容量和传输速度都有很大提升。就相当于买个保险嘛，绝对值得。当然这个账号的管理也要注意，别买了又忘记存。&lt;/p>
+&lt;p>这次撞大运了，今年不发两篇大文章实在说不过去吧 😄😁&lt;/p>
+&lt;hr>
+&lt;h2 id="老江的回复">老江的回复&lt;/h2>
+&lt;p>我也希望今年实验室能发大文章！大家一块努力！你说的百度云我想想。&lt;/p></content><category scheme="https://bejsernia.github.io/categories/%E8%AE%B0%E5%BD%95/" term="记录" label="记录"/><category scheme="https://bejsernia.github.io/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AE%A1%E7%90%86/" term="服务器管理" label="服务器管理"/><category scheme="https://bejsernia.github.io/tags/%E6%95%B0%E6%8D%AE%E6%81%A2%E5%A4%8D/" term="数据恢复" label="数据恢复"/><category scheme="https://bejsernia.github.io/tags/2025/" term="2025" label="2025"/></entry><entry><title type="text">修复Pangu的X11和图形化界面问题</title><link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/panguxserver/"/><id>https://bejsernia.github.io/posts/panguxserver/</id><updated>2025-05-09T16:11:36+08:00</updated><published>2025-05-09T15:24:10+08:00</published><author><name>Bejsernia</name><uri>https://bejsernia.github.io/</uri><email>kvis934@gmail.com</email></author><rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">目录 Pangu图形化界面打不开 问题描述 1. 问题情况 查看桌面系统启动报错 查看日志 2. 查看情……</summary><content type="html">&lt;h2 id="目录">目录&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#pangu%E5%9B%BE%E5%BD%A2%E5%8C%96%E7%95%8C%E9%9D%A2%E6%89%93%E4%B8%8D%E5%BC%80">Pangu图形化界面打不开&lt;/a>&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0">问题描述&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#1-%E9%97%AE%E9%A2%98%E6%83%85%E5%86%B5">1. 问题情况&lt;/a>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#%E6%9F%A5%E7%9C%8B%E6%A1%8C%E9%9D%A2%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E6%8A%A5%E9%94%99">查看桌面系统启动报错&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#%E6%9F%A5%E7%9C%8B%E6%97%A5%E5%BF%97">查看日志&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#2-%E6%9F%A5%E7%9C%8B%E6%83%85%E5%86%B5">2. 查看情况&lt;/a>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#%E6%A3%80%E6%9F%A5gdm%E6%8A%A5%E9%94%99">检查GDM报错&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#3-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95">3. 解决方法&lt;/a>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90">问题分析&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#%E8%A7%A3%E5%86%B3%E6%AD%A5%E9%AA%A4">解决步骤&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#pangu-x11-forwarding%E5%90%AF%E5%8A%A8%E5%A4%B1%E8%B4%A5">Pangu X11 Forwarding启动失败&lt;/a>&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#1-%E9%97%AE%E9%A2%98%E6%83%85%E5%86%B5-1">1. 问题情况&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#2-%E6%9F%A5%E7%9C%8B%E6%83%85%E5%86%B5-1">2. 查看情况&lt;/a>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#%E6%A3%80%E6%9F%A5%E9%85%8D%E7%BD%AE">检查配置&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/panguxserver/#3-%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95">3. 解决办法&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="pangu图形化界面打不开">Pangu图形化界面打不开&lt;/h2>
+&lt;h3 id="问题描述">问题描述&lt;/h3>
+&lt;p>2025-05-09&lt;br>
+装卸存储时发现Pangu图形化界面无法启动。一开始怀疑是Docker服务导致的问题，但禁用各种服务后仍未解决；尝试重装&lt;code>gdm3&lt;/code>等组件也无效。&lt;/p>
+&lt;hr>
+&lt;h3 id="1-问题情况">1. 问题情况&lt;/h3>
+&lt;h4 id="查看桌面系统启动报错">查看桌面系统启动报错&lt;/h4>
+&lt;p>运行以下命令：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">systemctl status gdm3
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>报错信息：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-plaintext" data-lang="plaintext">● gdm.service - GNOME Display Manager
+Loaded: loaded (/lib/systemd/system/gdm.service; static)
+Active: active (running) since Fri 2025-05-09 13:30:26 CST; 38min ago
+Process: 3788 ExecStartPre=/usr/share/gdm/generate-config (code=exited, status=0/SUCCESS)
+Main PID: 3849 (gdm3)
+Tasks: 3 (limit: 629145)
+Memory: 5.7M
+CPU: 609ms
+CGroup: /system.slice/gdm.service
+└─3849 /usr/sbin/gdm3
 May 09 14:02:50 pangu gdm3[3849]: Gdm: GdmDisplay: Session never registered, failing
 May 09 14:02:50 pangu gdm3[3849]: Gdm: GdmLocalDisplayFactory: maximum number of X display failures reached: check X server log for errors
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;h4 id=&#34;查看日志&#34;&gt;查看日志&lt;/h4&gt;
-&lt;p&gt;运行以下命令：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;less /var/log/Xorg.0.log
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;报错信息：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;GdmDisplay: Session never registered, failing
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="查看日志">查看日志&lt;/h4>
+&lt;p>运行以下命令：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">less /var/log/Xorg.0.log
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>报错信息：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-plaintext" data-lang="plaintext">GdmDisplay: Session never registered, failing
 GLib-GObject: g_object_unref: assertion &amp;#39;G_IS_OBJECT (object)&amp;#39; failed
 Child process was already dead
-
-[   427.546] (EE) Failed to load module &amp;#34;ast&amp;#34; (module does not exist, 0)
-[   427.783] (II) Initializing extension MIT-SCREEN-SAVER
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;怀疑是显卡驱动问题。运行以下命令查看显卡状态：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;lspci -v &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; grep VGA
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;03:00.0 VGA compatible controller: ASPEED Technology, Inc. ASPEED Graphics Family (rev 41) (prog-if 00 [VGA controller])
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;hr&gt;
-&lt;h3 id=&#34;2-查看情况&#34;&gt;2. 查看情况&lt;/h3&gt;
-&lt;h4 id=&#34;检查gdm报错&#34;&gt;检查GDM报错&lt;/h4&gt;
-&lt;p&gt;运行以下命令：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;journalctl -u gdm -b
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;ChatGPT总结：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;# 当前问题总结：
+[ 427.546] (EE) Failed to load module &amp;#34;ast&amp;#34; (module does not exist, 0)
+[ 427.783] (II) Initializing extension MIT-SCREEN-SAVER
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>怀疑是显卡驱动问题。运行以下命令查看显卡状态：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">lspci -v &lt;span class="p">|&lt;/span> grep VGA
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>输出结果：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-plaintext" data-lang="plaintext">03:00.0 VGA compatible controller: ASPEED Technology, Inc. ASPEED Graphics Family (rev 41) (prog-if 00 [VGA controller])
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h3 id="2-查看情况">2. 查看情况&lt;/h3>
+&lt;h4 id="检查gdm报错">检查GDM报错&lt;/h4>
+&lt;p>运行以下命令：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">journalctl -u gdm -b
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>ChatGPT总结：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-plaintext" data-lang="plaintext"># 当前问题总结：
 # GDM 启动流程如下：
 systemd --&amp;gt; gdm3 --&amp;gt; gdm-launch-environment --&amp;gt; GNOME 会话 (gnome-session)
 # 一步一步排查
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;运行以下命令查看版本：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;gnome-session --version
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;报错信息：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;/usr/libexec/gnome-session-binary: symbol lookup error: /lib/x86_64-linux-gnu/libcairo.so.2: undefined symbol: FT_Get_Var_Design_Coordinates
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;hr&gt;
-&lt;h3 id=&#34;3-解决方法&#34;&gt;3. 解决方法&lt;/h3&gt;
-&lt;h4 id=&#34;问题分析&#34;&gt;问题分析&lt;/h4&gt;
-&lt;p&gt;&lt;code&gt;FT_Get_Var_Design_Coordinates&lt;/code&gt;函数来自&lt;code&gt;libfreetype.so.6&lt;/code&gt;，问题出在以下路径：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;libfreetype.so.6 =&amp;gt; /usr/local/lib/libfreetype.so.6
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;h4 id=&#34;解决步骤&#34;&gt;解决步骤&lt;/h4&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;备份文件：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cp /lib/x86_64-linux-gnu/libcairo.so.2 /lib/x86_64-linux-gnu/libcairo.so.2.bak
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>运行以下命令查看版本：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">gnome-session --version
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>报错信息：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-plaintext" data-lang="plaintext">/usr/libexec/gnome-session-binary: symbol lookup error: /lib/x86_64-linux-gnu/libcairo.so.2: undefined symbol: FT_Get_Var_Design_Coordinates
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h3 id="3-解决方法">3. 解决方法&lt;/h3>
+&lt;h4 id="问题分析">问题分析&lt;/h4>
+&lt;p>&lt;code>FT_Get_Var_Design_Coordinates&lt;/code>函数来自&lt;code>libfreetype.so.6&lt;/code>，问题出在以下路径：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-plaintext" data-lang="plaintext">libfreetype.so.6 =&amp;gt; /usr/local/lib/libfreetype.so.6
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="解决步骤">解决步骤&lt;/h4>
+&lt;ol>
+&lt;li>
+&lt;p>备份文件：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">cp /lib/x86_64-linux-gnu/libcairo.so.2 /lib/x86_64-linux-gnu/libcairo.so.2.bak
 mv /usr/local/lib/libfreetype.so.6 /usr/local/lib/libfreetype.so.6.bak
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;替换库文件：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cp /lib/x86_64-linux-gnu/libfreetype.so.6 /usr/local/lib/libfreetype.so.6
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;刷新配置并重启服务：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ldconfig
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>替换库文件：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">cp /lib/x86_64-linux-gnu/libfreetype.so.6 /usr/local/lib/libfreetype.so.6
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>刷新配置并重启服务：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">ldconfig
 systemctl restart gdm3
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;验证：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;gnome-session --version
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;涉及的所有包：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;gdm3 gnome-shell gnome-session ubuntu-desktop xserver-xorg libfreetype6 libcairo2
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;hr&gt;
-&lt;h2 id=&#34;pangu-x11-forwarding启动失败&#34;&gt;Pangu X11 Forwarding启动失败&lt;/h2&gt;
-&lt;h3 id=&#34;1-问题情况-1&#34;&gt;1. 问题情况&lt;/h3&gt;
-&lt;p&gt;Pangu无法使用X11转发，但Guru正常。以下为问题截图：&lt;br&gt;
-&lt;img src=&#34;img1.png&#34; alt=&#34;Mobaxterm登录截图&#34;&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h3 id=&#34;2-查看情况-1&#34;&gt;2. 查看情况&lt;/h3&gt;
-&lt;h4 id=&#34;检查配置&#34;&gt;检查配置&lt;/h4&gt;
-&lt;p&gt;运行以下命令：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$DISPLAY&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;Pangu无输出，Guru正常，说明Pangu的X11转发未生效。&lt;/p&gt;
-&lt;p&gt;运行以下命令检查&lt;code&gt;sshd_config&lt;/code&gt;：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;sshd -T &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; grep x11
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;x11displayoffset 10
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>验证：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">gnome-session --version
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;p>涉及的所有包：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-plaintext" data-lang="plaintext">gdm3 gnome-shell gnome-session ubuntu-desktop xserver-xorg libfreetype6 libcairo2
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h2 id="pangu-x11-forwarding启动失败">Pangu X11 Forwarding启动失败&lt;/h2>
+&lt;h3 id="1-问题情况-1">1. 问题情况&lt;/h3>
+&lt;p>Pangu无法使用X11转发，但Guru正常。以下为问题截图：&lt;br>
+&lt;img src="img1.png" alt="Mobaxterm登录截图">&lt;/p>
+&lt;hr>
+&lt;h3 id="2-查看情况-1">2. 查看情况&lt;/h3>
+&lt;h4 id="检查配置">检查配置&lt;/h4>
+&lt;p>运行以下命令：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="nb">echo&lt;/span> &lt;span class="nv">$DISPLAY&lt;/span>
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Pangu无输出，Guru正常，说明Pangu的X11转发未生效。&lt;/p>
+&lt;p>运行以下命令检查&lt;code>sshd_config&lt;/code>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">sshd -T &lt;span class="p">|&lt;/span> grep x11
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>输出结果：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-plaintext" data-lang="plaintext">x11displayoffset 10
 x11forwarding yes
 x11uselocalhost yes
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;查看日志：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;grep X11 /var/log/auth.log
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;输出结果：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;May  9 13:52:54 pangu sshd[249636]: error: Failed to allocate internet-domain X11 display socket.
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;hr&gt;
-&lt;h3 id=&#34;3-解决办法&#34;&gt;3. 解决办法&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;编辑&lt;code&gt;/etc/ssh/sshd_config&lt;/code&gt;：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;X11UseLocalhost no
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;保存并重启服务：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;systemctl restart sshd
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;验证：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$DISPLAY&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</content>
-            
-            
-            
-            
-            
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/categories/%E8%AE%B0%E5%BD%95/" term="记录" label="记录" />
-                            
-                        
-                    
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AE%A1%E7%90%86/" term="服务器管理" label="服务器管理" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/x11/" term="X11" label="X11" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/2025/" term="2025" label="2025" />
-                            
-                        
-                    
-                
-            
-        </entry>
-    
-        <entry>
-            <title type="text">QWRT配置经验——Xiaomi AX3000T</title>
-            <link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/qwrt/" />
-            <id>https://bejsernia.github.io/posts/qwrt/</id>
-            <updated>2025-04-25T11:05:12&#43;08:00</updated>
-            <published>2025-04-24T12:51:27&#43;08:00</published>
-            <author>
-                    <name>Bejsernia</name>
-                    <uri>https://bejsernia.github.io/</uri>
-                    <email>kvis934@gmail.com</email>
-                    </author>
-            <rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">目录 刷机 1. 降级固件到1.0.47 2. 解锁ssh 3. ssh登录 4. 刷入openwrt 安装应用……</summary>
-            
-                <content type="html">&lt;h2 id=&#34;目录&#34;&gt;目录&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#%E5%88%B7%E6%9C%BA&#34;&gt;刷机&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#1%E9%99%8D%E7%BA%A7%E5%9B%BA%E4%BB%B6%E5%88%B01047&#34;&gt;1. 降级固件到1.0.47&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#2%E8%A7%A3%E9%94%81ssh&#34;&gt;2. 解锁ssh&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#3ssh%E7%99%BB%E5%BD%95&#34;&gt;3. ssh登录&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#4%E5%88%B7%E5%85%A5openwrt&#34;&gt;4. 刷入openwrt&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#%E5%AE%89%E8%A3%85%E5%BA%94%E7%94%A8&#34;&gt;安装应用&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#shadowsocksr-plus&#34;&gt;ShadowSocksR Plus&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#1%E5%AE%A2%E6%88%B7%E7%AB%AF&#34;&gt;1. 客户端&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#2%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%8A%82%E7%82%B9&#34;&gt;2. 服务器节点&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#ddns%E5%8A%A8%E6%80%81dns&#34;&gt;DDNS(动态DNS)&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#duckdns&#34;&gt;DuckDNS&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#%E7%BD%91%E7%BB%9C%E5%94%A4%E9%86%92&#34;&gt;网络唤醒&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#%E6%8E%A5%E5%8F%A3&#34;&gt;接口&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#%E6%97%A0%E7%BA%BF%E9%85%8D%E7%BD%AE&#34;&gt;无线配置&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#dhcpdnsdnsmasq&#34;&gt;DHCP/DNS(Dnsmasq)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#socat%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91&#34;&gt;Socat(端口转发)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/qwrt/#load-balancing&#34;&gt;Load Balancing&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;刷机&#34;&gt;刷机&lt;/h2&gt;
-&lt;h3 id=&#34;1降级固件到1047&#34;&gt;1.降级固件到1.0.47&lt;/h3&gt;
-&lt;p&gt;用卡针顶住路由器reset 恢复按钮，再插上电源。持续按住reset按键8s左右，看到指示灯闪烁
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>查看日志：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">grep X11 /var/log/auth.log
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>输出结果：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-plaintext" data-lang="plaintext">May 9 13:52:54 pangu sshd[249636]: error: Failed to allocate internet-domain X11 display socket.
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h3 id="3-解决办法">3. 解决办法&lt;/h3>
+&lt;ol>
+&lt;li>
+&lt;p>编辑&lt;code>/etc/ssh/sshd_config&lt;/code>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-plaintext" data-lang="plaintext">X11UseLocalhost no
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>保存并重启服务：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">systemctl restart sshd
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>验证：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="nb">echo&lt;/span> &lt;span class="nv">$DISPLAY&lt;/span>
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ol></content><category scheme="https://bejsernia.github.io/categories/%E8%AE%B0%E5%BD%95/" term="记录" label="记录"/><category scheme="https://bejsernia.github.io/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AE%A1%E7%90%86/" term="服务器管理" label="服务器管理"/><category scheme="https://bejsernia.github.io/tags/x11/" term="X11" label="X11"/><category scheme="https://bejsernia.github.io/tags/2025/" term="2025" label="2025"/></entry><entry><title type="text">QWRT配置经验——Xiaomi AX3000T</title><link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/qwrt/"/><id>https://bejsernia.github.io/posts/qwrt/</id><updated>2025-04-25T11:05:12+08:00</updated><published>2025-04-24T12:51:27+08:00</published><author><name>Bejsernia</name><uri>https://bejsernia.github.io/</uri><email>kvis934@gmail.com</email></author><rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">目录 刷机 1. 降级固件到1.0.47 2. 解锁ssh 3. ssh登录 4. 刷入openwrt 安装应用……</summary><content type="html">&lt;h2 id="目录">目录&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#%E5%88%B7%E6%9C%BA">刷机&lt;/a>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#1%E9%99%8D%E7%BA%A7%E5%9B%BA%E4%BB%B6%E5%88%B01047">1. 降级固件到1.0.47&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#2%E8%A7%A3%E9%94%81ssh">2. 解锁ssh&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#3ssh%E7%99%BB%E5%BD%95">3. ssh登录&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#4%E5%88%B7%E5%85%A5openwrt">4. 刷入openwrt&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#%E5%AE%89%E8%A3%85%E5%BA%94%E7%94%A8">安装应用&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#shadowsocksr-plus">ShadowSocksR Plus&lt;/a>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#1%E5%AE%A2%E6%88%B7%E7%AB%AF">1. 客户端&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#2%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%8A%82%E7%82%B9">2. 服务器节点&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#ddns%E5%8A%A8%E6%80%81dns">DDNS(动态DNS)&lt;/a>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#duckdns">DuckDNS&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#%E7%BD%91%E7%BB%9C%E5%94%A4%E9%86%92">网络唤醒&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#%E6%8E%A5%E5%8F%A3">接口&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#%E6%97%A0%E7%BA%BF%E9%85%8D%E7%BD%AE">无线配置&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#dhcpdnsdnsmasq">DHCP/DNS(Dnsmasq)&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#socat%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91">Socat(端口转发)&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/qwrt/#load-balancing">Load Balancing&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h2 id="刷机">刷机&lt;/h2>
+&lt;h3 id="1降级固件到1047">1.降级固件到1.0.47&lt;/h3>
+&lt;p>用卡针顶住路由器reset 恢复按钮，再插上电源。持续按住reset按键8s左右，看到指示灯闪烁
 通过官方救砖工具刷入固件。
-上传一个文件夹中1.0.47固件。上传成功后等待3-5分钟，看路由器的蓝灯闪烁。就可以手动断电重启路由，这时路由器就降级为1.0.47系统了。&lt;/p&gt;
-&lt;h3 id=&#34;2解锁ssh&#34;&gt;2.解锁ssh&lt;/h3&gt;
-&lt;p&gt;登录到&lt;a href=&#34;http://192.168.31.1&#34;&gt;小米路由器管理界面&lt;/a&gt;
+上传一个文件夹中1.0.47固件。上传成功后等待3-5分钟，看路由器的蓝灯闪烁。就可以手动断电重启路由，这时路由器就降级为1.0.47系统了。&lt;/p>
+&lt;h3 id="2解锁ssh">2.解锁ssh&lt;/h3>
+&lt;p>登录到&lt;a href="http://192.168.31.1">小米路由器管理界面&lt;/a>
 查看地址栏的stok值
-打开cmd运行：&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;set stok_value=你的值
+打开cmd运行：&lt;/p>
+&lt;pre tabindex="0">&lt;code>set stok_value=你的值
 curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0Anvram%20set%20ssh_en%3D1%0A&amp;quot;
 curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0Anvram%20commit%0A&amp;quot;
-curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0Ased%20-i%20&#39;s%2Fchannel%3D.*%2Fchannel%3D%22debug%22%2Fg&#39;%20%2Fetc%2Finit.d%2Fdropbear%0A&amp;quot;
+curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0Ased%20-i%20's%2Fchannel%3D.*%2Fchannel%3D%22debug%22%2Fg'%20%2Fetc%2Finit.d%2Fdropbear%0A&amp;quot;
 curl -X POST http://192.168.31.1/cgi-bin/luci/;stok=%stok_value%/api/misystem/arn_switch -d &amp;quot;open=1&amp;amp;model=1&amp;amp;level=%0A%2Fetc%2Finit.d%2Fdropbear%20start%0A&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;3ssh登录&#34;&gt;3.ssh登录&lt;/h3&gt;
-&lt;p&gt;先得通过SN计算才能得出，sn在&lt;a href=&#34;http://192.168.31.1&#34;&gt;小米路由器管理界面&lt;/a&gt;界面右下角
-密码通过这个&lt;a href=&#34;https://miwifi.dev/ssh&#34;&gt;Xiaomi Router Developer Guide &amp;amp; Tools&lt;/a&gt; 网址输入sn就能得出
-用该密码登录root账户即可&lt;/p&gt;
-&lt;p&gt;上传uboot固件到&lt;code&gt;/tmp&lt;/code&gt;&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cd /tmp
+&lt;/code>&lt;/pre>&lt;h3 id="3ssh登录">3.ssh登录&lt;/h3>
+&lt;p>先得通过SN计算才能得出，sn在&lt;a href="http://192.168.31.1">小米路由器管理界面&lt;/a>界面右下角
+密码通过这个&lt;a href="https://miwifi.dev/ssh">Xiaomi Router Developer Guide &amp;amp; Tools&lt;/a> 网址输入sn就能得出
+用该密码登录root账户即可&lt;/p>
+&lt;p>上传uboot固件到&lt;code>/tmp&lt;/code>&lt;/p>
+&lt;pre tabindex="0">&lt;code>cd /tmp
 mtd write mt7981_ax3000t-fip-fixed-parts-multi-layout.bin FIP #回车输入uboot
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;等待3-5分钟 然后uboot写入成功后，指示灯会有变化，然后拔掉电源。&lt;/p&gt;
-&lt;h3 id=&#34;4刷入openwrt&#34;&gt;4.刷入openwrt&lt;/h3&gt;
-&lt;p&gt;进入uboot的方法按住路由器的reset键再通电。一直按住状态等待15秒左右，指示灯变蓝就行。
-手动电脑的IP地址设置为&lt;code&gt;192.168.1.2&lt;/code&gt;，然后进&lt;code&gt;192.168.1.1&lt;/code&gt;，就能见到uboot的ui界面了。&lt;/p&gt;
-&lt;p&gt;在uboot界面里选择qwrt，上传网盘中的&lt;code&gt;openwrt-mediatek-R23.11.11-mt7981-xiaomi_mi-router-ax3000t-squashfs-sysupgrade.bin&lt;/code&gt;固件就可以了。大概三到五分钟就能刷入成功，重启路由就搞定了，重启后电脑设置自动获取IP，固件后台地址&lt;code&gt;192.168.1.1&lt;/code&gt;；登录名&lt;code&gt;root&lt;/code&gt; 密码 &lt;code&gt;password&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt;参考：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;https://liangnianban.com/blog/83&#34;&gt;https://liangnianban.com/blog/83&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://blog.csdn.net/jgw2008/article/details/135645594&#34;&gt;https://blog.csdn.net/jgw2008/article/details/135645594&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;安装应用&#34;&gt;安装应用&lt;/h2&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;opkg update
+&lt;/code>&lt;/pre>&lt;p>等待3-5分钟 然后uboot写入成功后，指示灯会有变化，然后拔掉电源。&lt;/p>
+&lt;h3 id="4刷入openwrt">4.刷入openwrt&lt;/h3>
+&lt;p>进入uboot的方法按住路由器的reset键再通电。一直按住状态等待15秒左右，指示灯变蓝就行。
+手动电脑的IP地址设置为&lt;code>192.168.1.2&lt;/code>，然后进&lt;code>192.168.1.1&lt;/code>，就能见到uboot的ui界面了。&lt;/p>
+&lt;p>在uboot界面里选择qwrt，上传网盘中的&lt;code>openwrt-mediatek-R23.11.11-mt7981-xiaomi_mi-router-ax3000t-squashfs-sysupgrade.bin&lt;/code>固件就可以了。大概三到五分钟就能刷入成功，重启路由就搞定了，重启后电脑设置自动获取IP，固件后台地址&lt;code>192.168.1.1&lt;/code>；登录名&lt;code>root&lt;/code> 密码 &lt;code>password&lt;/code>。&lt;/p>
+&lt;p>参考：&lt;/p>
+&lt;ol>
+&lt;li>&lt;a href="https://liangnianban.com/blog/83">https://liangnianban.com/blog/83&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://blog.csdn.net/jgw2008/article/details/135645594">https://blog.csdn.net/jgw2008/article/details/135645594&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h2 id="安装应用">安装应用&lt;/h2>
+&lt;pre tabindex="0">&lt;code>opkg update
 opkg install &amp;lt;package&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;hr&gt;
-&lt;h2 id=&#34;shadowsocksr-plus&#34;&gt;ShadowSocksR Plus&lt;/h2&gt;
-&lt;h3 id=&#34;1客户端&#34;&gt;1.客户端&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;运行模式&lt;/strong&gt;
-目前选择&lt;code&gt;GFW列表模式&lt;/code&gt;，否则校园网内部ip的域名会走国外域名DNS服务器，导致无法解析出ip地址&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;需要代理的端口&lt;/strong&gt;
-&lt;code&gt;选择仅常用端口&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;DNS解析方式&lt;/strong&gt;
+&lt;/code>&lt;/pre>&lt;hr>
+&lt;h2 id="shadowsocksr-plus">ShadowSocksR Plus&lt;/h2>
+&lt;h3 id="1客户端">1.客户端&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>运行模式&lt;/strong>
+目前选择&lt;code>GFW列表模式&lt;/code>，否则校园网内部ip的域名会走国外域名DNS服务器，导致无法解析出ip地址&lt;/li>
+&lt;li>&lt;strong>需要代理的端口&lt;/strong>
+&lt;code>选择仅常用端口&lt;/code>&lt;/li>
+&lt;li>&lt;strong>DNS解析方式&lt;/strong>
 shadowsocksr的DNS配置选择好像会影响Dnsmasq是否能够代理
 这与该选项以及国内外域名DNS服务器的选择有关
-目前我的选择是：&lt;code&gt;使用DNS2SOCKS查询并缓存&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;2服务器节点&#34;&gt;2.服务器节点&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;订阅URL栏填写Clash或其他类型订阅地址&lt;/li&gt;
-&lt;li&gt;订阅节点关键字过滤&lt;code&gt;过期时间/剩余流量/QQ群/官网/防失联地址/回国/开通/套餐/x2&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;订阅节点关键字保留检查 &lt;code&gt;香港/日本/新加坡/JLab&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;Wukong代理服务器配置需要在节点部分手动添加&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;ddns动态dns&#34;&gt;DDNS(动态DNS)&lt;/h2&gt;
-&lt;h4 id=&#34;duckdns&#34;&gt;DuckDNS&lt;/h4&gt;
-&lt;p&gt;似乎DuckDNS登录了网页以后会自动把IP设置为当前设备ip对应的公网ip
-日志储存在&lt;code&gt;/var/log/ddns/DuckDNS.log&lt;/code&gt;
-使用命令&lt;code&gt;dig xx.com @8.8.8.8&lt;/code&gt;可以测试DNS解析域名(ping会先看hosts，dig直接看/etc/resolv.conf)
-&lt;strong&gt;1.基础设置&lt;/strong&gt;
-Domain就是在&lt;a href=&#34;duckdns.org&#34;&gt;DuckDNS&lt;/a&gt;注册的子域名&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;查询主机名&lt;code&gt;Domain.duckdns.org&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;DDNS服务提供商填&lt;code&gt;DuckDNS&lt;/code&gt;或者自定义更新URL&lt;code&gt;https://www.duckdns.org/update?domains=[DOMAIN]&amp;amp;token=[PASSWORD]&amp;amp;ip=&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;域名填注册的Domain&lt;/li&gt;
-&lt;li&gt;密码填DuckDNS中的令牌&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;2.高级设置&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;IP地址来源：接口或WAN；在实验室我使用接口eth1（校园网分配的ip）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;a href=&#34;https://post.smzdm.com/p/a60d48zo/&#34;&gt;OPENWRT多拨后利用ddns-go给多路vwan指定子域名&lt;/a&gt;(还没试过)&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;网络唤醒&#34;&gt;网络唤醒&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;网络唤醒程序使用&lt;code&gt;Etherwake&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;选择使用的网络接口&lt;code&gt;br-lan&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;选择要唤醒的主机：通过ip或者mac判断哪部设备是pc（有点难）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;接口&#34;&gt;接口&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;物理上的WAN口和LAN口配置，参考：&lt;a href=&#34;https://post.smzdm.com/p/az6p9ggr/&#34;&gt;openwrt vlan详解与WAN口、LAN口任意设定指南&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;VWAN配置，参考：&lt;a href=&#34;https://blog.csdn.net/m0_59496782/article/details/121862378&#34;&gt;拿什么拯救你，我的校园网——校园网优化之单线多拨&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;无线配置&#34;&gt;无线配置&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;WIFI名称中不要包含空格，非法命名会导致无线失效&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;dhcpdnsdnsmasq&#34;&gt;DHCP/DNS(Dnsmasq)&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;默认的端口为53&lt;/li&gt;
-&lt;li&gt;取消勾选重绑定保护，不然DNS不会返回解析的内网ip，导致部分校园域名无法访问&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;socat端口转发&#34;&gt;Socat(端口转发)&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;设置远程桌面端口3389为目标端口，目标地址使用PC的192开头private ip，监听端口则为映射端口，协议选择TCP和UDP&lt;/li&gt;
-&lt;li&gt;openwrt管理页面目标地址填写192开头的路由器管理页面地址&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;load-balancing&#34;&gt;Load Balancing&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;对于单线多拨的校园网，在规则处分别将校园网认证页面policy改成wan_only并登录，远程连接地址policy设定为校园网wan_only
-参考：&lt;a href=&#34;https://blog.csdn.net/m0_59496782/article/details/121862378&#34;&gt;拿什么拯救你，我的校园网——校园网优化之单线多拨&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</content>
-            
-            
-            
-            
-            
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/categories/%E7%BB%8F%E9%AA%8C/" term="经验" label="经验" />
-                            
-                        
-                    
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/%E8%B7%AF%E7%94%B1%E5%99%A8/" term="路由器" label="路由器" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/%E7%BD%91%E7%BB%9C/" term="网络" label="网络" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/2025/" term="2025" label="2025" />
-                            
-                        
-                    
-                
-            
-        </entry>
-    
-        <entry>
-            <title type="text">HiST</title>
-            <link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/hist/" />
-            <id>https://bejsernia.github.io/posts/hist/</id>
-            <updated>2025-05-09T16:46:53&#43;08:00</updated>
-            <published>2025-03-11T14:39:00&#43;08:00</published>
-            <author>
-                    <name>Bejsernia</name>
-                    <uri>https://bejsernia.github.io/</uri>
-                    <email>kvis934@gmail.com</email>
-                    </author>
-            <rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">HiST: Histological Image Reconstruct Tumor Spatial Transcriptomics via MultiScale Fusion Deep Learning HiST Github Repository Address Table of Contents Introduction Installation Usage 0.Download data 1.Preprocess module 2.Prediction module 3.Application Module Credits and Acknowledgments License Citation Introduction Repository Address Spatial transcriptomics (ST) offers……</summary>
-            
-                <content type="html">&lt;h1 id=&#34;hist-histological-image-reconstruct-tumor-spatial-transcriptomics-via-multiscale-fusion-deep-learning&#34;&gt;HiST: Histological Image Reconstruct Tumor Spatial Transcriptomics via MultiScale Fusion Deep Learning&lt;/h1&gt;
-&lt;hr&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/Yelab2020/HiST&#34;&gt;HiST Github Repository Address&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;table-of-contents&#34;&gt;Table of Contents&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#introduction&#34;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#installation&#34;&gt;Installation&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#usage&#34;&gt;Usage&lt;/a&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#0-download-data&#34;&gt;0.Download data&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#1-preprocess-module&#34;&gt;1.Preprocess module&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#2-prediction-module&#34;&gt;2.Prediction module&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#3-application-module&#34;&gt;3.Application Module&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#credits-and-acknowledgments&#34;&gt;Credits and Acknowledgments&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#license&#34;&gt;License&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://bejsernia.github.io/posts/hist/#citation&#34;&gt;Citation&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/Yelab2020/HiST&#34;&gt;Repository Address&lt;/a&gt;&lt;/p&gt;
-&lt;img src=&#34;HiST%20architecture.jpg&#34; width = &#34;570&#34; height = &#34;546&#34; alt=&#34;HiST Architecture&#34; align=center /&gt;
-&lt;p&gt;Spatial transcriptomics (ST) offers valuable insights into the tumor microenvironment by integrating molecular features with spatial context, but its clinical diagnostic application is limited due to its high cost.&lt;/p&gt;
-&lt;p&gt;To address this, we develop multi-scale convolutional deep learning framework, HiST, which utilizes ST to learn the relationship between spatially resolved gene expression profiles (GEPs) and histological morphology. HiST accurately predicts tumor regions (e.g., breast cancer, area under curve: 0.96), which are highly concordant with pathologist annotations. Then HiST reconstructs spatially resolved GEPs with an average Pearson correlation coefficient of 0.74 across five cancer types, which is &amp;gt;3 folds greater than that of the best previously reported tool. HiST&#39;s application module performs well in predicting cancer patient prognosis for five cancer types from the Cancer Genome Atlas (e.g., a concordance index 0.78 in breast cancer) and immunotherapy outcomes. Moreover, spatial GEPs aid to unveil regulatory networks and key regulators to immunotherapy.&lt;/p&gt;
-&lt;p&gt;In summary, HiST’s robust performance in tumor identification and reconstruction of spatial GEPs and its applications in prognosis prediction and immunotherapy response offer great potential for advancing tumor profiling and improving personalized cancer treatment.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;installation&#34;&gt;Installation&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;We recommend run HiST on &lt;strong&gt;Linux&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;To get started, clone the repository and install the required dependencies:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git clone https://github.com/Yelab2020/HiST.git
-&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; HiST
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Method1 :Use requirement file(Not recommended):&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;conda create -n HiST &lt;span class=&#34;nv&#34;&gt;python&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;3.8.18 mamba
+目前我的选择是：&lt;code>使用DNS2SOCKS查询并缓存&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h3 id="2服务器节点">2.服务器节点&lt;/h3>
+&lt;ul>
+&lt;li>订阅URL栏填写Clash或其他类型订阅地址&lt;/li>
+&lt;li>订阅节点关键字过滤&lt;code>过期时间/剩余流量/QQ群/官网/防失联地址/回国/开通/套餐/x2&lt;/code>&lt;/li>
+&lt;li>订阅节点关键字保留检查 &lt;code>香港/日本/新加坡/JLab&lt;/code>&lt;/li>
+&lt;li>Wukong代理服务器配置需要在节点部分手动添加&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="ddns动态dns">DDNS(动态DNS)&lt;/h2>
+&lt;h4 id="duckdns">DuckDNS&lt;/h4>
+&lt;p>似乎DuckDNS登录了网页以后会自动把IP设置为当前设备ip对应的公网ip
+日志储存在&lt;code>/var/log/ddns/DuckDNS.log&lt;/code>
+使用命令&lt;code>dig xx.com @8.8.8.8&lt;/code>可以测试DNS解析域名(ping会先看hosts，dig直接看/etc/resolv.conf)
+&lt;strong>1.基础设置&lt;/strong>
+Domain就是在&lt;a href="duckdns.org">DuckDNS&lt;/a>注册的子域名&lt;/p>
+&lt;ul>
+&lt;li>查询主机名&lt;code>Domain.duckdns.org&lt;/code>&lt;/li>
+&lt;li>DDNS服务提供商填&lt;code>DuckDNS&lt;/code>或者自定义更新URL&lt;code>https://www.duckdns.org/update?domains=[DOMAIN]&amp;amp;token=[PASSWORD]&amp;amp;ip=&lt;/code>&lt;/li>
+&lt;li>域名填注册的Domain&lt;/li>
+&lt;li>密码填DuckDNS中的令牌&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>2.高级设置&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>IP地址来源：接口或WAN；在实验室我使用接口eth1（校园网分配的ip）&lt;/li>
+&lt;/ul>
+&lt;p>&lt;a href="https://post.smzdm.com/p/a60d48zo/">OPENWRT多拨后利用ddns-go给多路vwan指定子域名&lt;/a>(还没试过)&lt;/p>
+&lt;hr>
+&lt;h2 id="网络唤醒">网络唤醒&lt;/h2>
+&lt;ul>
+&lt;li>网络唤醒程序使用&lt;code>Etherwake&lt;/code>&lt;/li>
+&lt;li>选择使用的网络接口&lt;code>br-lan&lt;/code>&lt;/li>
+&lt;li>选择要唤醒的主机：通过ip或者mac判断哪部设备是pc（有点难）&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="接口">接口&lt;/h2>
+&lt;ul>
+&lt;li>物理上的WAN口和LAN口配置，参考：&lt;a href="https://post.smzdm.com/p/az6p9ggr/">openwrt vlan详解与WAN口、LAN口任意设定指南&lt;/a>&lt;/li>
+&lt;li>VWAN配置，参考：&lt;a href="https://blog.csdn.net/m0_59496782/article/details/121862378">拿什么拯救你，我的校园网——校园网优化之单线多拨&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="无线配置">无线配置&lt;/h2>
+&lt;ul>
+&lt;li>WIFI名称中不要包含空格，非法命名会导致无线失效&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="dhcpdnsdnsmasq">DHCP/DNS(Dnsmasq)&lt;/h2>
+&lt;ul>
+&lt;li>默认的端口为53&lt;/li>
+&lt;li>取消勾选重绑定保护，不然DNS不会返回解析的内网ip，导致部分校园域名无法访问&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="socat端口转发">Socat(端口转发)&lt;/h2>
+&lt;ul>
+&lt;li>设置远程桌面端口3389为目标端口，目标地址使用PC的192开头private ip，监听端口则为映射端口，协议选择TCP和UDP&lt;/li>
+&lt;li>openwrt管理页面目标地址填写192开头的路由器管理页面地址&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="load-balancing">Load Balancing&lt;/h2>
+&lt;ul>
+&lt;li>对于单线多拨的校园网，在规则处分别将校园网认证页面policy改成wan_only并登录，远程连接地址policy设定为校园网wan_only
+参考：&lt;a href="https://blog.csdn.net/m0_59496782/article/details/121862378">拿什么拯救你，我的校园网——校园网优化之单线多拨&lt;/a>&lt;/li>
+&lt;/ul></content><category scheme="https://bejsernia.github.io/categories/%E7%BB%8F%E9%AA%8C/" term="经验" label="经验"/><category scheme="https://bejsernia.github.io/tags/%E8%B7%AF%E7%94%B1%E5%99%A8/" term="路由器" label="路由器"/><category scheme="https://bejsernia.github.io/tags/%E7%BD%91%E7%BB%9C/" term="网络" label="网络"/><category scheme="https://bejsernia.github.io/tags/2025/" term="2025" label="2025"/></entry><entry><title type="text">HiST</title><link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/hist/"/><id>https://bejsernia.github.io/posts/hist/</id><updated>2025-05-09T16:46:53+08:00</updated><published>2025-03-11T14:39:00+08:00</published><author><name>Bejsernia</name><uri>https://bejsernia.github.io/</uri><email>kvis934@gmail.com</email></author><rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">HiST: Histological Image Reconstruct Tumor Spatial Transcriptomics via MultiScale Fusion Deep Learning HiST Github Repository Address Table of Contents Introduction Installation Usage 0.Download data 1.Preprocess module 2.Prediction module 3.Application Module Credits and Acknowledgments License Citation Introduction Repository Address Spatial transcriptomics (ST) offers……</summary><content type="html">&lt;h1 id="hist-histological-image-reconstruct-tumor-spatial-transcriptomics-via-multiscale-fusion-deep-learning">HiST: Histological Image Reconstruct Tumor Spatial Transcriptomics via MultiScale Fusion Deep Learning&lt;/h1>
+&lt;hr>
+&lt;p>&lt;a href="https://github.com/Yelab2020/HiST">HiST Github Repository Address&lt;/a>&lt;/p>
+&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/hist/#introduction">Introduction&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/hist/#installation">Installation&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/hist/#usage">Usage&lt;/a>
+&lt;ul>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/hist/#0-download-data">0.Download data&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/hist/#1-preprocess-module">1.Preprocess module&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/hist/#2-prediction-module">2.Prediction module&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/hist/#3-application-module">3.Application Module&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/hist/#credits-and-acknowledgments">Credits and Acknowledgments&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/hist/#license">License&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://bejsernia.github.io/posts/hist/#citation">Citation&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>&lt;a href="https://github.com/Yelab2020/HiST">Repository Address&lt;/a>&lt;/p>
+&lt;img src="HiST%20architecture.jpg" width = "570" height = "546" alt="HiST Architecture" align=center />
+&lt;p>Spatial transcriptomics (ST) offers valuable insights into the tumor microenvironment by integrating molecular features with spatial context, but its clinical diagnostic application is limited due to its high cost.&lt;/p>
+&lt;p>To address this, we develop multi-scale convolutional deep learning framework, HiST, which utilizes ST to learn the relationship between spatially resolved gene expression profiles (GEPs) and histological morphology. HiST accurately predicts tumor regions (e.g., breast cancer, area under curve: 0.96), which are highly concordant with pathologist annotations. Then HiST reconstructs spatially resolved GEPs with an average Pearson correlation coefficient of 0.74 across five cancer types, which is &amp;gt;3 folds greater than that of the best previously reported tool. HiST's application module performs well in predicting cancer patient prognosis for five cancer types from the Cancer Genome Atlas (e.g., a concordance index 0.78 in breast cancer) and immunotherapy outcomes. Moreover, spatial GEPs aid to unveil regulatory networks and key regulators to immunotherapy.&lt;/p>
+&lt;p>In summary, HiST’s robust performance in tumor identification and reconstruction of spatial GEPs and its applications in prognosis prediction and immunotherapy response offer great potential for advancing tumor profiling and improving personalized cancer treatment.&lt;/p>
+&lt;hr>
+&lt;h2 id="installation">Installation&lt;/h2>
+&lt;ul>
+&lt;li>We recommend run HiST on &lt;strong>Linux&lt;/strong>&lt;/li>
+&lt;/ul>
+&lt;p>To get started, clone the repository and install the required dependencies:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">git clone https://github.com/Yelab2020/HiST.git
+&lt;span class="nb">cd&lt;/span> HiST
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Method1 :Use requirement file(Not recommended):&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">conda create -n HiST &lt;span class="nv">python&lt;/span>&lt;span class="o">=&lt;/span>3.8.18 mamba
 conda activate HiST
 mamba install --yes -n HiST -c conda-forge --file requirements.txt
 pip install ./resource/timm-0.5.4.tar
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;Use &lt;code&gt;nvcc -V&lt;/code&gt;to check cuda version on your device
-&lt;strong&gt;Method2 :Follow the instructions:&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;conda create -n HiST &lt;span class=&#34;nv&#34;&gt;python&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;3.8.18 mamba
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Use &lt;code>nvcc -V&lt;/code>to check cuda version on your device
+&lt;strong>Method2 :Follow the instructions:&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">conda create -n HiST &lt;span class="nv">python&lt;/span>&lt;span class="o">=&lt;/span>3.8.18 mamba
 conda activate HiST
-&lt;span class=&#34;c1&#34;&gt;#Obtain the corresponding CUDA version of torch on your device:https://pytorch.org/get-started/locally/&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#Or Install by mamba(Recommended):&lt;/span&gt;
-mamba install pytorch torchvision torchaudio pytorch-cuda&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;12.4 -c pytorch -c nvidia
-&lt;span class=&#34;c1&#34;&gt;#Author dependent configuration (used to reproduce):&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#pip install torch==1.10.1+cu111 torchvision==0.11.2+cu111 torchaudio==0.10.1 -f https://download.pytorch.org/whl/cu111/torch_stable.html&lt;/span&gt;
-&lt;span class=&#34;c1&#34;&gt;#Other dependencies&lt;/span&gt;
-mamba install -c conda-forge python-spams&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;2.6.1
-pip install &lt;span class=&#34;nv&#34;&gt;numpy&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;==&lt;/span&gt;1.22 imgaug albumentations pandas matplotlib scikit-learn opencv-python staintools lifelines torchsurv openpyxl palettable leidenalg ipykernel tqdm scanpy
-&lt;span class=&#34;c1&#34;&gt;#Install modified timm for CTranspath(Feature extraction model)&lt;/span&gt;
+&lt;span class="c1">#Obtain the corresponding CUDA version of torch on your device:https://pytorch.org/get-started/locally/&lt;/span>
+&lt;span class="c1">#Or Install by mamba(Recommended):&lt;/span>
+mamba install pytorch torchvision torchaudio pytorch-cuda&lt;span class="o">=&lt;/span>12.4 -c pytorch -c nvidia
+&lt;span class="c1">#Author dependent configuration (used to reproduce):&lt;/span>
+&lt;span class="c1">#pip install torch==1.10.1+cu111 torchvision==0.11.2+cu111 torchaudio==0.10.1 -f https://download.pytorch.org/whl/cu111/torch_stable.html&lt;/span>
+&lt;span class="c1">#Other dependencies&lt;/span>
+mamba install -c conda-forge python-spams&lt;span class="o">=&lt;/span>2.6.1
+pip install &lt;span class="nv">numpy&lt;/span>&lt;span class="o">==&lt;/span>1.22 imgaug albumentations pandas matplotlib scikit-learn opencv-python staintools lifelines torchsurv openpyxl palettable leidenalg ipykernel tqdm scanpy
+&lt;span class="c1">#Install modified timm for CTranspath(Feature extraction model)&lt;/span>
 pip install ./resource/timm-0.5.4.tar
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;&lt;strong&gt;install seurat in R(conda env HiST)&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;mamba install rpy2 r-tidyverse r-Seurat -c r
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-R&#34; data-lang=&#34;R&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# Run in R console&lt;/span&gt;
-&lt;span class=&#34;n&#34;&gt;packages&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;c&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Seurat&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;tidyverse&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;nf&#34;&gt;install.packages&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;sf&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;repos&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;https://cran.r-project.org&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Used for gene selection method (Optional):&lt;a href=&#34;https://r-spatial.github.io/sf/&#34;&gt;R package sf installation instructions&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>install seurat in R(conda env HiST)&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">mamba install rpy2 r-tidyverse r-Seurat -c r
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-R" data-lang="R">&lt;span class="c1"># Run in R console&lt;/span>
+&lt;span class="n">packages&lt;/span> &lt;span class="o">&amp;lt;-&lt;/span> &lt;span class="nf">c&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;Seurat&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;tidyverse&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="nf">install.packages&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;sf&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">repos&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s">&amp;#34;https://cran.r-project.org&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Used for gene selection method (Optional):&lt;a href="https://r-spatial.github.io/sf/">R package sf installation instructions&lt;/a>&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
 sudo apt-get update
 sudo apt-get install libudunits2-dev libgdal-dev libgeos-dev libproj-dev libsqlite0-dev
 mamba install r-sf r-spdep -c r
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Other dependencies(Optional; if WSIs are used for training or prediction)&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;sudo apt update &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt install -y openslide-tools
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Other dependencies(Optional; if WSIs are used for training or prediction)&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">sudo apt update &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> apt install -y openslide-tools
 pip install openslide-python
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;hr&gt;
-&lt;h2 id=&#34;usage&#34;&gt;Usage&lt;/h2&gt;
-&lt;p&gt;We use two sample from CRC dataset of 10x Visium technology as an example.&lt;/p&gt;
-&lt;h3 id=&#34;0-download-data&#34;&gt;0. Download data&lt;/h3&gt;
-&lt;h5 id=&#34;apre-trained-model-weights-for-feature-extraction-can-be-downloaded-herehttpsdrivegooglecomfiled1dodx_70_tlj98gtf6ytxnu4tfhsfocdxviewuspsharing-and-please-put-it-in-your_working_directoryhistresource&#34;&gt;(A)Pre-trained model weights for feature extraction can be downloaded &lt;a href=&#34;https://drive.google.com/file/d/1DoDx_70_TLj98gTf6YTXnu4tFhsFocDX/view?usp=sharing&#34;&gt;here&lt;/a&gt;, and please put it in &lt;code&gt;/your_working_directory/HiST/resource/&lt;/code&gt;.&lt;/h5&gt;
-&lt;h5 id=&#34;btwo-test-sample-data-of-crc-can-be-downloaded-herehttpsdrivegooglecomfiled1-87c3eqf4uk-esniwlmgfwudvxnx-sb_viewuspsharing-please-unzip-datazip-and-put-the-contents-in-your_working_directoryhistdata&#34;&gt;(B)Two test sample data of CRC can be downloaded &lt;a href=&#34;https://drive.google.com/file/d/1-87C3EQf4UK-EsNiWlMGFWUDvxNX-Sb_/view?usp=sharing&#34;&gt;here&lt;/a&gt;. Please unzip data.zip and put the contents in &lt;code&gt;/your_working_directory/HiST/data/&lt;/code&gt;&lt;/h5&gt;
-&lt;p&gt;Data folder structure:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;HE: Full resolution HE images.&lt;/li&gt;
-&lt;li&gt;hires_HE: High resolution HE images provided by spaceranger.&lt;/li&gt;
-&lt;li&gt;seurat_obj: ST sample Seurat objects.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;./data
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h2 id="usage">Usage&lt;/h2>
+&lt;p>We use two sample from CRC dataset of 10x Visium technology as an example.&lt;/p>
+&lt;h3 id="0-download-data">0. Download data&lt;/h3>
+&lt;h5 id="apre-trained-model-weights-for-feature-extraction-can-be-downloaded-herehttpsdrivegooglecomfiled1dodx_70_tlj98gtf6ytxnu4tfhsfocdxviewuspsharing-and-please-put-it-in-your_working_directoryhistresource">(A)Pre-trained model weights for feature extraction can be downloaded &lt;a href="https://drive.google.com/file/d/1DoDx_70_TLj98gTf6YTXnu4tFhsFocDX/view?usp=sharing">here&lt;/a>, and please put it in &lt;code>/your_working_directory/HiST/resource/&lt;/code>.&lt;/h5>
+&lt;h5 id="btwo-test-sample-data-of-crc-can-be-downloaded-herehttpsdrivegooglecomfiled1-87c3eqf4uk-esniwlmgfwudvxnx-sb_viewuspsharing-please-unzip-datazip-and-put-the-contents-in-your_working_directoryhistdata">(B)Two test sample data of CRC can be downloaded &lt;a href="https://drive.google.com/file/d/1-87C3EQf4UK-EsNiWlMGFWUDvxNX-Sb_/view?usp=sharing">here&lt;/a>. Please unzip data.zip and put the contents in &lt;code>/your_working_directory/HiST/data/&lt;/code>&lt;/h5>
+&lt;p>Data folder structure:&lt;/p>
+&lt;ul>
+&lt;li>HE: Full resolution HE images.&lt;/li>
+&lt;li>hires_HE: High resolution HE images provided by spaceranger.&lt;/li>
+&lt;li>seurat_obj: ST sample Seurat objects.&lt;/li>
+&lt;/ul>
+&lt;pre tabindex="0">&lt;code>./data
 ├── HE
-│   ├── CRC1.jpg
-│   └── CRC2.jpg
+│ ├── CRC1.jpg
+│ └── CRC2.jpg
 ├── hires_HE
-│   ├── CRC1_tissue_hires_image.png
-│   └── CRC2_tissue_hires_image.png
+│ ├── CRC1_tissue_hires_image.png
+│ └── CRC2_tissue_hires_image.png
 ├── seurat_obj
-│   ├── CRC1.rds.gz
-│   └── CRC2.rds.gz
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;1-preprocess-module&#34;&gt;1. Preprocess module&lt;/h3&gt;
-&lt;p&gt;For preprocess module, we obtained the histological information and spatial context of the original whole slice imaging (WSI), avoiding the high GPU memory requirements of high-resolution WSI.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Step1(Optional): Gene selection &lt;code&gt;./R/1.gene_select.R&lt;/code&gt;.
-Sample file: &lt;code&gt;./resource/CRC_SVG346_list.txt&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;Rscript ./R/1.gene_select.R
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;ul&gt;
-&lt;li&gt;Step2: Create gene matrix and mask matrix &lt;code&gt;./R/2.get_matrix.R&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;Rscript ./R/2.get_matrix.R
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;ul&gt;
-&lt;li&gt;Step3: Prepare mask and patch &amp;amp; feature extraction.
-Run in python, referring to the &lt;a href=&#34;./vignettes/1.preprocess_module.ipynb&#34;&gt;vignette&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;2-prediction-module&#34;&gt;2. Prediction module&lt;/h3&gt;
-&lt;p&gt;We used an improved U-Net framework on prediction module with two prediction tasks, including &lt;strong&gt;tumor spots identification and tumor spatial transcriptomics prediction.&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;em&gt;Please refer to the &lt;a href=&#34;./vignettes/2.prediction_module.ipynb&#34;&gt;vignette&lt;/a&gt; for specific steps.&lt;/em&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;3-application-module&#34;&gt;3. Application module&lt;/h3&gt;
-&lt;p&gt;We utilized the ST profiles obtained from prediction module as the molecular features of HE histology images and trained the model for &lt;strong&gt;disease prognosis and immunotherapy response prediction.&lt;/strong&gt;&lt;/p&gt;
-&lt;h5 id=&#34;a-survival-model&#34;&gt;A. Survival model&lt;/h5&gt;
-&lt;ul&gt;
-&lt;li&gt;Step0: Download slide images from &lt;a href=&#34;https://portal.gdc.cancer.gov/&#34;&gt;TCGA&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;Step1: Prepare WSI patches.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;(i) Cut WSIs into patches
+│ ├── CRC1.rds.gz
+│ └── CRC2.rds.gz
+&lt;/code>&lt;/pre>&lt;h3 id="1-preprocess-module">1. Preprocess module&lt;/h3>
+&lt;p>For preprocess module, we obtained the histological information and spatial context of the original whole slice imaging (WSI), avoiding the high GPU memory requirements of high-resolution WSI.&lt;/p>
+&lt;ul>
+&lt;li>Step1(Optional): Gene selection &lt;code>./R/1.gene_select.R&lt;/code>.
+Sample file: &lt;code>./resource/CRC_SVG346_list.txt&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">Rscript ./R/1.gene_select.R
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ul>
+&lt;li>Step2: Create gene matrix and mask matrix &lt;code>./R/2.get_matrix.R&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">Rscript ./R/2.get_matrix.R
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ul>
+&lt;li>Step3: Prepare mask and patch &amp;amp; feature extraction.
+Run in python, referring to the &lt;a href="./vignettes/1.preprocess_module.ipynb">vignette&lt;/a>.&lt;/li>
+&lt;/ul>
+&lt;h3 id="2-prediction-module">2. Prediction module&lt;/h3>
+&lt;p>We used an improved U-Net framework on prediction module with two prediction tasks, including &lt;strong>tumor spots identification and tumor spatial transcriptomics prediction.&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>&lt;em>Please refer to the &lt;a href="./vignettes/2.prediction_module.ipynb">vignette&lt;/a> for specific steps.&lt;/em>&lt;/li>
+&lt;/ul>
+&lt;h3 id="3-application-module">3. Application module&lt;/h3>
+&lt;p>We utilized the ST profiles obtained from prediction module as the molecular features of HE histology images and trained the model for &lt;strong>disease prognosis and immunotherapy response prediction.&lt;/strong>&lt;/p>
+&lt;h5 id="a-survival-model">A. Survival model&lt;/h5>
+&lt;ul>
+&lt;li>Step0: Download slide images from &lt;a href="https://portal.gdc.cancer.gov/">TCGA&lt;/a>.&lt;/li>
+&lt;li>Step1: Prepare WSI patches.&lt;/li>
+&lt;/ul>
+&lt;p>(i) Cut WSIs into patches
 Output: HE(resized smaller TCGA HE images) and tiles.
-Usage:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;nohup python ./util/TCGA_HE_preprocess.py --data_path &lt;span class=&#34;s1&#34;&gt;&amp;#39;./data/TCGA/Biospecimen/Slide_Image&amp;#39;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
-&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;--output_path &lt;span class=&#34;s1&#34;&gt;&amp;#39;./output/TCGA/&amp;#39;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
-&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;--cores &lt;span class=&#34;m&#34;&gt;8&lt;/span&gt; &amp;gt; ./HE_preprocess.log 2&amp;gt;&lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;(ii) Clean up tiles (Optional): &lt;a href=&#34;https://github.com/lucasrla/wsi-tile-cleanup&#34;&gt;source:wsi-tile-cleanup&lt;/a&gt;
+Usage:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">nohup python ./util/TCGA_HE_preprocess.py --data_path &lt;span class="s1">&amp;#39;./data/TCGA/Biospecimen/Slide_Image&amp;#39;&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;span class="se">&lt;/span>--output_path &lt;span class="s1">&amp;#39;./output/TCGA/&amp;#39;&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;span class="se">&lt;/span>--cores &lt;span class="m">8&lt;/span> &amp;gt; ./HE_preprocess.log 2&amp;gt;&lt;span class="p">&amp;amp;&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="p">&amp;amp;&lt;/span>
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>(ii) Clean up tiles (Optional): &lt;a href="https://github.com/lucasrla/wsi-tile-cleanup">source:wsi-tile-cleanup&lt;/a>
 Output: Tiles only containing tissue sections.
-Installation:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;conda create -n wsi_cleanup --channel conda-forge &lt;span class=&#34;nv&#34;&gt;python&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;3.6 libvips pyvips numpy
+Installation:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">conda create -n wsi_cleanup --channel conda-forge &lt;span class="nv">python&lt;/span>&lt;span class="o">=&lt;/span>3.6 libvips pyvips numpy
 conda activate wsi_cleanup
 python3.6 -m pip install git+https://github.com/lucasrla/wsi-tile-cleanup.git
 pip install pillow ipykernel tqdm pandas
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;Usage:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
-&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
-&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;nohup python tile_cleanup.py --source_root_path &lt;span class=&#34;s1&#34;&gt;&amp;#39;./output/TCGA/tiles&amp;#39;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
-&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;--output_path &lt;span class=&#34;s1&#34;&gt;&amp;#39;../output/TCGA/clean_tiles_75/&amp;#39;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
-&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;--cutoff 0.75 --cores &lt;span class=&#34;m&#34;&gt;16&lt;/span&gt; &amp;gt; ./TCGA_tile_cleanup.log 2&amp;gt;&lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;&lt;em&gt;Please refer to the &lt;a href=&#34;./vignettes/3.1application_module_survival.ipynb&#34;&gt;vignette&lt;/a&gt; for the following steps.&lt;/em&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Step3: Feature extraction.&lt;/li&gt;
-&lt;li&gt;Step4: Spatial gene profiles prediction by HiST gene prediction module.&lt;/li&gt;
-&lt;li&gt;Step5: Training survival model.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h5 id=&#34;b-immunotherapy-response-model&#34;&gt;B. Immunotherapy response model&lt;/h5&gt;
-&lt;p&gt;&lt;em&gt;Please refer to the &lt;a href=&#34;./vignettes/3.2application_module_ICB.ipynb&#34;&gt;vignette&lt;/a&gt; for the following steps.&lt;/em&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Step0: Download slide images from &lt;a href=&#34;https://ngdc.cncb.ac.cn/&#34;&gt;NGDC&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;Step1: Prepare WSI patches.&lt;/li&gt;
-&lt;li&gt;Step3: Feature extraction.&lt;/li&gt;
-&lt;li&gt;Step4: Spatial gene profiles prediction by HiST gene prediction module.&lt;/li&gt;
-&lt;li&gt;Step5: Training classfication model.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;credits-and-acknowledgments&#34;&gt;Credits and Acknowledgments&lt;/h2&gt;
-&lt;p&gt;Ground truth of tumor segmentation was inferred by &lt;a href=&#34;https://github.com/Yelab2020/Cottrazm&#34;&gt;Cottrazm&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Pretrained model weights are from &lt;a href=&#34;https://github.com/Xiyue-Wang/TransPath&#34;&gt;CTransPath&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Tiles clean up method using &lt;a href=&#34;https://github.com/lucasrla/wsi-tile-cleanup&#34;&gt;wsi-tile-cleanup&lt;/a&gt;&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;license&#34;&gt;License&lt;/h2&gt;
-&lt;p&gt;This project is licensed under the MIT License. See the &lt;a href=&#34;LICENSE&#34;&gt;LICENSE&lt;/a&gt; file for details.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;citation&#34;&gt;Citation&lt;/h2&gt;
-&lt;p&gt;(Unpublished now)&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;@article{HiST,
-    title={HiST: Histological Image Reconstruct Tumor Spatial Transcriptomics via MultiScale Fusion Deep Learning},
-    author={Wei Li#, Dong Zhang#, Eryu Peng, Shijun Shen, Yao Liu*, Junke Zheng*, Cizhong Jiang*, Youqiong Ye*},
-    journal={XX},
-    year={2025},
-    doi={xx}
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Usage:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">nohup python tile_cleanup.py --source_root_path &lt;span class="s1">&amp;#39;./output/TCGA/tiles&amp;#39;&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;span class="se">&lt;/span>--output_path &lt;span class="s1">&amp;#39;../output/TCGA/clean_tiles_75/&amp;#39;&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;span class="se">&lt;/span>--cutoff 0.75 --cores &lt;span class="m">16&lt;/span> &amp;gt; ./TCGA_tile_cleanup.log 2&amp;gt;&lt;span class="p">&amp;amp;&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="p">&amp;amp;&lt;/span>
+&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;em>Please refer to the &lt;a href="./vignettes/3.1application_module_survival.ipynb">vignette&lt;/a> for the following steps.&lt;/em>&lt;/p>
+&lt;ul>
+&lt;li>Step3: Feature extraction.&lt;/li>
+&lt;li>Step4: Spatial gene profiles prediction by HiST gene prediction module.&lt;/li>
+&lt;li>Step5: Training survival model.&lt;/li>
+&lt;/ul>
+&lt;h5 id="b-immunotherapy-response-model">B. Immunotherapy response model&lt;/h5>
+&lt;p>&lt;em>Please refer to the &lt;a href="./vignettes/3.2application_module_ICB.ipynb">vignette&lt;/a> for the following steps.&lt;/em>&lt;/p>
+&lt;ul>
+&lt;li>Step0: Download slide images from &lt;a href="https://ngdc.cncb.ac.cn/">NGDC&lt;/a>.&lt;/li>
+&lt;li>Step1: Prepare WSI patches.&lt;/li>
+&lt;li>Step3: Feature extraction.&lt;/li>
+&lt;li>Step4: Spatial gene profiles prediction by HiST gene prediction module.&lt;/li>
+&lt;li>Step5: Training classfication model.&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="credits-and-acknowledgments">Credits and Acknowledgments&lt;/h2>
+&lt;p>Ground truth of tumor segmentation was inferred by &lt;a href="https://github.com/Yelab2020/Cottrazm">Cottrazm&lt;/a>&lt;/p>
+&lt;p>Pretrained model weights are from &lt;a href="https://github.com/Xiyue-Wang/TransPath">CTransPath&lt;/a>&lt;/p>
+&lt;p>Tiles clean up method using &lt;a href="https://github.com/lucasrla/wsi-tile-cleanup">wsi-tile-cleanup&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h2 id="license">License&lt;/h2>
+&lt;p>This project is licensed under the MIT License. See the &lt;a href="LICENSE">LICENSE&lt;/a> file for details.&lt;/p>
+&lt;hr>
+&lt;h2 id="citation">Citation&lt;/h2>
+&lt;p>(Unpublished now)&lt;/p>
+&lt;pre tabindex="0">&lt;code>@article{HiST,
+title={HiST: Histological Image Reconstruct Tumor Spatial Transcriptomics via MultiScale Fusion Deep Learning},
+author={Wei Li#, Dong Zhang#, Eryu Peng, Shijun Shen, Yao Liu*, Junke Zheng*, Cizhong Jiang*, Youqiong Ye*},
+journal={XX},
+year={2025},
+doi={xx}
 }
-&lt;/code&gt;&lt;/pre&gt;</content>
-            
-            
-            
-            
-            
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/categories/%E5%AD%A6%E6%9C%AF/" term="学术" label="学术" />
-                            
-                        
-                    
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" term="深度学习" label="深度学习" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/github/" term="Github" label="Github" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/readme/" term="README" label="README" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/%E6%88%91%E7%9A%84%E8%AE%BA%E6%96%87/" term="我的论文" label="我的论文" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/2025/" term="2025" label="2025" />
-                            
-                        
-                    
-                
-            
-        </entry>
-    
-        <entry>
-            <title type="text">深度学习2023笔记</title>
-            <link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/dl2023/" />
-            <id>https://bejsernia.github.io/posts/dl2023/</id>
-            <updated>2025-04-24T20:46:47&#43;08:00</updated>
-            <published>2023-07-12T20:43:27&#43;08:00</published>
-            <author>
-                    <name>Bejsernia</name>
-                    <uri>https://bejsernia.github.io/</uri>
-                    <email>kvis934@gmail.com</email>
-                    </author>
-            <rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">某次心血来潮翻看会议文章集记录的一点内容 A Guide to NeurIPS 2022 — 10 Topics and 50 Papers You Shouldn&#39;t Miss （nips202……</summary>
-            
-                <content type="html">&lt;p&gt;某次心血来潮翻看会议文章集记录的一点内容&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.zeta-alpha.com/post/a-guide-to-neurips-2022-10-topics-and-50-papers-you-shouldn-t-miss&#34;&gt;A Guide to NeurIPS 2022 — 10 Topics and 50 Papers You Shouldn&#39;t Miss&lt;/a&gt; &lt;em&gt;&lt;strong&gt;（nips2022)&lt;/strong&gt;&lt;/em&gt;
-2672 main papers, 63 workshops, 7 invited talks, and finally in person again. Language Models, Brain-Inspired research, Diffusion Models, Graph Neural Networks... NeurIPS comes packed with world-class AI research insights, and this guide will help you find where to focus your attention.&lt;/p&gt;
-&lt;h1 id=&#34;知识蒸馏模型knowledge-distillation-model&#34;&gt;知识蒸馏模型（Knowledge Distillation Model）&lt;/h1&gt;
-&lt;p&gt;&lt;a href=&#34;https://blog.csdn.net/m0_37723079/article/details/123954975&#34;&gt;https://blog.csdn.net/m0_37723079/article/details/123954975&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;Untitled.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Teacher模型&lt;/strong&gt;：首先，我们需要一个原始的“大”模型——Teacher模型，这个模型可以不限制其结构、参数量、是否集成，要求这个模型尽可能精度高，并且对于给定的输入X可以给出输出的监督信息Y，这个Y在分类任务中就是softmax的结果，也就是输出对应类别的概率值。这里我们称Y为soft targets，而训练数据的标注好的标签，我们称为hard targets。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Student模型&lt;/strong&gt;：这个部分的模型选择会有很多限制，要求其参数量小，结构相对简单，当然最好是单模型。并且需要注意的是，训练过程中student模型学习的不再是单纯的hard targets（标注好的真实标签），而是融入teacher模型输出的soft targets（监督信息Y），这里也被称为knowledge transfer。蒸馏的损失函数distillation loss分为两部分：一部分计算teacher和student之间输出预测值的差别（student预测的y 和 soft targets），另一部分计算student原本的loss（student预测的y 和 hard targets），这两部分做凸组合作为整个模型训练的损失函数来进行梯度更新，最终获得一个同时兼顾精度和性能的student模型。&lt;/p&gt;
-&lt;h2 id=&#34;从训练方式区分&#34;&gt;从训练方式区分&lt;/h2&gt;
-&lt;p&gt;论文：&lt;em&gt;Knowledge Distillation and Student-Teacher Learning for Visual Intelligence: A Review and New Outlooks&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;Untitled%201.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;离线蒸馏方式&lt;/strong&gt;，即为传统的知识蒸馏，如上图（a）。一般来讲，Teacher模型的参数在蒸馏训练过程中保持不变，选用的Teacher模型和Student模型准确性相对悬殊比较大，并且Student模型会在很大程度上依赖Teacher模型。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;半监督训练方式&lt;/strong&gt;，利用了Teacher模型的预测信息作为标签来对Sudent网络进行监督学习，如上图（b），不同于传统的离线蒸馏方式，在对Student模型训练之前，先输入部分未标记的数据，利用Teacher网络输出的标签作为监督信息，再输入到Student网络中来完成蒸馏，这样可以使用更少的标注数据，达到提升模型精度的目的。在online蒸馏中，Student模型和Teacher模型将同时更新，整个知识提炼框架是可以从端到端训练的。给出一篇online蒸馏的文章：&lt;strong&gt;Online Knowledge Distillation with Diverse Peers&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;自监督蒸馏&lt;/strong&gt;，相比于传统的离线蒸馏方式，是不需要提前训练一个Teacher模型的，而是Student网络本身的训练是一个蒸馏过程，如上图（c）。具体的实现方式有很多种，比如训练Student模型时，在整个训练过程的最后几个epoch的时候，利用前面训练的Student模型作为监督模型，在剩下的几个epoch中对模型进行蒸馏。这样做的好处，是不需要提前训练一个Teacher模型，可以做到边训练边蒸馏，节省整个蒸馏过程的训练时间。同样给出一篇自监督的蒸馏：&lt;em&gt;&lt;strong&gt;Be Your Own Teacher: Improve the Performance of Convolutional Neural Networks via Self Distillation&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
-&lt;h2 id=&#34;从知识来源位置区分&#34;&gt;从知识来源位置区分&lt;/h2&gt;
-&lt;p&gt;论文：&lt;em&gt;Knowledge Distillation: A Survey&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;Untitled%202.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Response-Based的知识是从teacher模型的output layer中学习到的，而Feature-Based是从hidden layer中学习到的知识，Relation-Based则是学习input-hidden-output之间的关系。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;Untitled%203.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;蒸馏在nlp中的应用&#34;&gt;蒸馏在NLP中的应用&lt;/h2&gt;
-&lt;p&gt;在NLP的大部分任务中，我们可能习惯上追崇Bert大法，但是Bert本身参数量比较大，在一些特殊情况下，我们需要部署一个小而美的模型，这时候我们需要给Bert进行“瘦身”。一般认为比较有效的瘦身方法有上面介绍的蒸馏、量化（Quantization）、剪枝（Pruning）。这里我们介绍几个效果不错的Bert蒸馏模型。&lt;/p&gt;
-&lt;h3 id=&#34;distillbert&#34;&gt;DistillBERT&lt;/h3&gt;
-&lt;p&gt;论文地址：&lt;a href=&#34;https://arxiv.org/pdf/1910.01108.pdf&#34;&gt;https://arxiv.org/pdf/1910.01108.pdf&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&#34;tinybert&#34;&gt;TinyBERT&lt;/h3&gt;
-&lt;p&gt;&lt;strong&gt;论文地址&lt;/strong&gt;：&lt;a href=&#34;https://arxiv.org/pdf/1909.10351.pdf&#34;&gt;https://arxiv.org/pdf/1909.10351.pdf&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;项目地址&lt;/strong&gt;：&lt;a href=&#34;https://github.com/huawei-noah/Pretrained-Language-Model/tree/master/TinyBERT&#34;&gt;https://github.com/huawei-noah/Pretrained-Language-Model/tree/master/TinyBERT&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&#34;扩散模型diffusion-model&#34;&gt;扩散模型（Diffusion Model）&lt;/h1&gt;
-&lt;p&gt;&lt;a href=&#34;https://blog.csdn.net/weixin_47772355/article/details/128475726&#34;&gt;https://blog.csdn.net/weixin_47772355/article/details/128475726&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;功能&#34;&gt;功能&lt;/h2&gt;
-&lt;p&gt;1、文字生成图片&lt;/p&gt;
-&lt;p&gt;2、根据给定的图片生成相似风格画作&lt;/p&gt;
-&lt;p&gt;3、图片延展&lt;/p&gt;
-&lt;h2 id=&#34;生成模型对比&#34;&gt;生成模型对比&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&#34;Untitled%204.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;原理扩散现象&#34;&gt;原理：扩散现象&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;物理&lt;/strong&gt;：物质分子从高浓度向低浓度区域转移，直到均匀分布。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;AI&lt;/strong&gt;：由熵增定律驱动，先给一幅图片增加噪声，让其变得极其混乱，再训练AI把混乱的照片变回有序（实现图片生成）。&lt;/p&gt;
-&lt;h2 id=&#34;实现方式&#34;&gt;实现方式&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&#34;Untitled%205.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
-&lt;p&gt;1、前向过程（加噪）&lt;/p&gt;
-&lt;p&gt;2、反向过程（去噪）&lt;/p&gt;
-&lt;h1 id=&#34;增强学习reinforcement-learning&#34;&gt;增强学习（Reinforcement Learning）&lt;/h1&gt;
-&lt;h1 id=&#34;自监督self-supervision&#34;&gt;自监督（Self-supervision）&lt;/h1&gt;
-&lt;p&gt;&lt;img src=&#34;Untitled%206.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;定义&#34;&gt;定义&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;自监督学习（Self-Supervised Learning）&lt;/strong&gt; 是&lt;em&gt;无监督学习&lt;/em&gt;里面的一种，也被称作(pretext task)。自监督学习主要是利用辅助任务（pretext）从大规模的无监督数据中挖掘自身的监督信息，通过这种构造的监督信息对网络进行训练，从而可以学习到对下游任务有价值的表征。 自监督学习的&lt;em&gt;优势&lt;/em&gt;，就是可以在无标签的数据上完成训练，而监督学习需要大量的有标签数据，强化学习需要与环境的大量交互尝试，数据为王的时代，此特点也使得大家充分相信自监督学习才是人工智能的发展方向。&lt;/p&gt;
-&lt;h2 id=&#34;自监督学习的主要方法&#34;&gt;自监督学习的主要方法&lt;/h2&gt;
-&lt;h3 id=&#34;-基于上下文context-based&#34;&gt;&lt;strong&gt;● 基于上下文（Context based）&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;基于数据本身的上下文信息，我们可以构造很多任务，如NLP领域中重要的Word2vec算法。Word2vec主要是利用语句的顺序，例如CBOW通过利用周围词来预测中心词，而Skip-Gram通过中心词来预测周围的词。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://mmbiz.qpic.cn/mmbiz_png/iceydPUR0IY2bum9rDm6cGkcXqWqys6DvcgEuwM0hrneicubOWibCGibTMbsk1ke0VsvAra92wRdZgM8nj6tU2ozdg/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;图 1 Word2vec的两种方法&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;在图像领域，研究人员通过一种名为Jigsaw（拼图）的方式来构造辅助任务（pretext）。将一张图分成9个部分，然后通过预测这几个部分的相对位置来产生损失。比如输入这张图中小猫的眼睛和右耳朵，然后让模型学习到猫的右耳朵是在眼睛的右上方的，如果模型能够很好得完成这个任务，那么就可以认为模型学习到的表征是具有语义信息的。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://mmbiz.qpic.cn/mmbiz_png/iceydPUR0IY2bum9rDm6cGkcXqWqys6DvoKuUwQpjibEuQBvmZauMdM6pyulB2JXNSwRXm8NRusRib4icMjloZbVUQ/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1&#34;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;基于上下文预测的无监督视觉表征学习&lt;/strong&gt;&lt;/p&gt;
-&lt;h3 id=&#34;-基于时序temporal-based&#34;&gt;&lt;strong&gt;● 基于时序（Temporal Based）&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;在基于上下文的方法中大多是基于样本本身的信息，而样本间其实也具有很多的约束关系，因此可以利用时序约束来进行自监督学习。最能体现时序的数据类型就是视频（video）。&lt;/p&gt;
-&lt;p&gt;在视频领域可以基于帧的相似性进行研究，对于视频中的每一帧存在特征相似的概念，简单来说可以认为视频中的相邻帧的特征是相似的，而相隔较远的视频帧之间的相似度较低。通过构建这种相似（positive）和不相似（negative）的样本来进行自监督约束。&lt;/p&gt;
-&lt;h3 id=&#34;-基于对比contrastive-based&#34;&gt;&lt;strong&gt;● 基于对比（Contrastive Based）&lt;/strong&gt;&lt;/h3&gt;
-&lt;p&gt;第三类自监督学习的方法是基于对比约束，它通过学习对两个事物的相似或不相似进行编码来构建表征。在第二部分中所介绍的基于时序的方法已经涉及到了基于对比的约束，其通过构建正样本（positive）和负样本（negative），然后度量正负样本的距离从而实现自监督学习。&lt;/p&gt;
-&lt;h1 id=&#34;自编码器auto-encoder&#34;&gt;自编码器（Auto-encoder)&lt;/h1&gt;
-&lt;p&gt;&lt;a href=&#34;https://zhuanlan.zhihu.com/p/561216882&#34;&gt;https://zhuanlan.zhihu.com/p/561216882&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&#34;示意图&#34;&gt;示意图&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&#34;Untitled%207.png&#34; alt=&#34;Untitled&#34;&gt;&lt;/p&gt;
-&lt;h1 id=&#34;一些其他热门方向&#34;&gt;一些其他热门方向&lt;/h1&gt;
-&lt;ul&gt;
-&lt;li&gt;类脑（Brain-Inspired）&lt;/li&gt;
-&lt;li&gt;域外泛化（Out-of-domain Genelization）&lt;/li&gt;
-&lt;li&gt;图神经网络（Graph Neural Networks）&lt;/li&gt;
-&lt;li&gt;Learning Theory&lt;/li&gt;
-&lt;li&gt;Language Models and Prompting&lt;/li&gt;
-&lt;li&gt;Adversarial Robustness, Federated Learning, Compression&lt;/li&gt;
-&lt;/ul&gt;
-</content>
-            
-            
-            
-            
-            
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/categories/%E7%AC%94%E8%AE%B0/" term="笔记" label="笔记" />
-                            
-                        
-                    
-                
-                    
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" term="深度学习" label="深度学习" />
-                            
-                        
-                            
-                            
-                            
-                                <category scheme="https://bejsernia.github.io/tags/2023/" term="2023" label="2023" />
-                            
-                        
-                    
-                
-            
-        </entry>
-    
-</feed>
+&lt;/code>&lt;/pre></content><category scheme="https://bejsernia.github.io/categories/%E5%AD%A6%E6%9C%AF/" term="学术" label="学术"/><category scheme="https://bejsernia.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" term="深度学习" label="深度学习"/><category scheme="https://bejsernia.github.io/tags/github/" term="Github" label="Github"/><category scheme="https://bejsernia.github.io/tags/readme/" term="README" label="README"/><category scheme="https://bejsernia.github.io/tags/%E6%88%91%E7%9A%84%E8%AE%BA%E6%96%87/" term="我的论文" label="我的论文"/><category scheme="https://bejsernia.github.io/tags/2025/" term="2025" label="2025"/></entry><entry><title type="text">深度学习2023笔记</title><link rel="alternate" type="text/html" href="https://bejsernia.github.io/posts/dl2023/"/><id>https://bejsernia.github.io/posts/dl2023/</id><updated>2025-04-24T20:46:47+08:00</updated><published>2023-07-12T20:43:27+08:00</published><author><name>Bejsernia</name><uri>https://bejsernia.github.io/</uri><email>kvis934@gmail.com</email></author><rights>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</rights><summary type="html">某次心血来潮翻看会议文章集记录的一点内容 A Guide to NeurIPS 2022 — 10 Topics and 50 Papers You Shouldn't Miss （nips202……</summary><content type="html">&lt;p>某次心血来潮翻看会议文章集记录的一点内容&lt;/p>
+&lt;p>&lt;a href="https://www.zeta-alpha.com/post/a-guide-to-neurips-2022-10-topics-and-50-papers-you-shouldn-t-miss">A Guide to NeurIPS 2022 — 10 Topics and 50 Papers You Shouldn't Miss&lt;/a> &lt;em>&lt;strong>（nips2022)&lt;/strong>&lt;/em>
+2672 main papers, 63 workshops, 7 invited talks, and finally in person again. Language Models, Brain-Inspired research, Diffusion Models, Graph Neural Networks... NeurIPS comes packed with world-class AI research insights, and this guide will help you find where to focus your attention.&lt;/p>
+&lt;h1 id="知识蒸馏模型knowledge-distillation-model">知识蒸馏模型（Knowledge Distillation Model）&lt;/h1>
+&lt;p>&lt;a href="https://blog.csdn.net/m0_37723079/article/details/123954975">https://blog.csdn.net/m0_37723079/article/details/123954975&lt;/a>&lt;/p>
+&lt;p>&lt;img src="Untitled.png" alt="Untitled">&lt;/p>
+&lt;p>&lt;strong>Teacher模型&lt;/strong>：首先，我们需要一个原始的“大”模型——Teacher模型，这个模型可以不限制其结构、参数量、是否集成，要求这个模型尽可能精度高，并且对于给定的输入X可以给出输出的监督信息Y，这个Y在分类任务中就是softmax的结果，也就是输出对应类别的概率值。这里我们称Y为soft targets，而训练数据的标注好的标签，我们称为hard targets。&lt;/p>
+&lt;p>&lt;strong>Student模型&lt;/strong>：这个部分的模型选择会有很多限制，要求其参数量小，结构相对简单，当然最好是单模型。并且需要注意的是，训练过程中student模型学习的不再是单纯的hard targets（标注好的真实标签），而是融入teacher模型输出的soft targets（监督信息Y），这里也被称为knowledge transfer。蒸馏的损失函数distillation loss分为两部分：一部分计算teacher和student之间输出预测值的差别（student预测的y 和 soft targets），另一部分计算student原本的loss（student预测的y 和 hard targets），这两部分做凸组合作为整个模型训练的损失函数来进行梯度更新，最终获得一个同时兼顾精度和性能的student模型。&lt;/p>
+&lt;h2 id="从训练方式区分">从训练方式区分&lt;/h2>
+&lt;p>论文：&lt;em>Knowledge Distillation and Student-Teacher Learning for Visual Intelligence: A Review and New Outlooks&lt;/em>&lt;/p>
+&lt;p>&lt;img src="Untitled%201.png" alt="Untitled">&lt;/p>
+&lt;p>&lt;strong>离线蒸馏方式&lt;/strong>，即为传统的知识蒸馏，如上图（a）。一般来讲，Teacher模型的参数在蒸馏训练过程中保持不变，选用的Teacher模型和Student模型准确性相对悬殊比较大，并且Student模型会在很大程度上依赖Teacher模型。&lt;/p>
+&lt;p>&lt;strong>半监督训练方式&lt;/strong>，利用了Teacher模型的预测信息作为标签来对Sudent网络进行监督学习，如上图（b），不同于传统的离线蒸馏方式，在对Student模型训练之前，先输入部分未标记的数据，利用Teacher网络输出的标签作为监督信息，再输入到Student网络中来完成蒸馏，这样可以使用更少的标注数据，达到提升模型精度的目的。在online蒸馏中，Student模型和Teacher模型将同时更新，整个知识提炼框架是可以从端到端训练的。给出一篇online蒸馏的文章：&lt;strong>Online Knowledge Distillation with Diverse Peers&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>自监督蒸馏&lt;/strong>，相比于传统的离线蒸馏方式，是不需要提前训练一个Teacher模型的，而是Student网络本身的训练是一个蒸馏过程，如上图（c）。具体的实现方式有很多种，比如训练Student模型时，在整个训练过程的最后几个epoch的时候，利用前面训练的Student模型作为监督模型，在剩下的几个epoch中对模型进行蒸馏。这样做的好处，是不需要提前训练一个Teacher模型，可以做到边训练边蒸馏，节省整个蒸馏过程的训练时间。同样给出一篇自监督的蒸馏：&lt;em>&lt;strong>Be Your Own Teacher: Improve the Performance of Convolutional Neural Networks via Self Distillation&lt;/strong>&lt;/em>&lt;/p>
+&lt;h2 id="从知识来源位置区分">从知识来源位置区分&lt;/h2>
+&lt;p>论文：&lt;em>Knowledge Distillation: A Survey&lt;/em>&lt;/p>
+&lt;p>&lt;img src="Untitled%202.png" alt="Untitled">&lt;/p>
+&lt;p>Response-Based的知识是从teacher模型的output layer中学习到的，而Feature-Based是从hidden layer中学习到的知识，Relation-Based则是学习input-hidden-output之间的关系。&lt;/p>
+&lt;p>&lt;img src="Untitled%203.png" alt="Untitled">&lt;/p>
+&lt;h2 id="蒸馏在nlp中的应用">蒸馏在NLP中的应用&lt;/h2>
+&lt;p>在NLP的大部分任务中，我们可能习惯上追崇Bert大法，但是Bert本身参数量比较大，在一些特殊情况下，我们需要部署一个小而美的模型，这时候我们需要给Bert进行“瘦身”。一般认为比较有效的瘦身方法有上面介绍的蒸馏、量化（Quantization）、剪枝（Pruning）。这里我们介绍几个效果不错的Bert蒸馏模型。&lt;/p>
+&lt;h3 id="distillbert">DistillBERT&lt;/h3>
+&lt;p>论文地址：&lt;a href="https://arxiv.org/pdf/1910.01108.pdf">https://arxiv.org/pdf/1910.01108.pdf&lt;/a>&lt;/p>
+&lt;h3 id="tinybert">TinyBERT&lt;/h3>
+&lt;p>&lt;strong>论文地址&lt;/strong>：&lt;a href="https://arxiv.org/pdf/1909.10351.pdf">https://arxiv.org/pdf/1909.10351.pdf&lt;/a>&lt;/p>
+&lt;p>&lt;strong>项目地址&lt;/strong>：&lt;a href="https://github.com/huawei-noah/Pretrained-Language-Model/tree/master/TinyBERT">https://github.com/huawei-noah/Pretrained-Language-Model/tree/master/TinyBERT&lt;/a>&lt;/p>
+&lt;h1 id="扩散模型diffusion-model">扩散模型（Diffusion Model）&lt;/h1>
+&lt;p>&lt;a href="https://blog.csdn.net/weixin_47772355/article/details/128475726">https://blog.csdn.net/weixin_47772355/article/details/128475726&lt;/a>&lt;/p>
+&lt;h2 id="功能">功能&lt;/h2>
+&lt;p>1、文字生成图片&lt;/p>
+&lt;p>2、根据给定的图片生成相似风格画作&lt;/p>
+&lt;p>3、图片延展&lt;/p>
+&lt;h2 id="生成模型对比">生成模型对比&lt;/h2>
+&lt;p>&lt;img src="Untitled%204.png" alt="Untitled">&lt;/p>
+&lt;h2 id="原理扩散现象">原理：扩散现象&lt;/h2>
+&lt;p>&lt;strong>物理&lt;/strong>：物质分子从高浓度向低浓度区域转移，直到均匀分布。&lt;/p>
+&lt;p>&lt;strong>AI&lt;/strong>：由熵增定律驱动，先给一幅图片增加噪声，让其变得极其混乱，再训练AI把混乱的照片变回有序（实现图片生成）。&lt;/p>
+&lt;h2 id="实现方式">实现方式&lt;/h2>
+&lt;p>&lt;img src="Untitled%205.png" alt="Untitled">&lt;/p>
+&lt;p>1、前向过程（加噪）&lt;/p>
+&lt;p>2、反向过程（去噪）&lt;/p>
+&lt;h1 id="增强学习reinforcement-learning">增强学习（Reinforcement Learning）&lt;/h1>
+&lt;h1 id="自监督self-supervision">自监督（Self-supervision）&lt;/h1>
+&lt;p>&lt;img src="Untitled%206.png" alt="Untitled">&lt;/p>
+&lt;h2 id="定义">定义&lt;/h2>
+&lt;p>&lt;strong>自监督学习（Self-Supervised Learning）&lt;/strong> 是&lt;em>无监督学习&lt;/em>里面的一种，也被称作(pretext task)。自监督学习主要是利用辅助任务（pretext）从大规模的无监督数据中挖掘自身的监督信息，通过这种构造的监督信息对网络进行训练，从而可以学习到对下游任务有价值的表征。 自监督学习的&lt;em>优势&lt;/em>，就是可以在无标签的数据上完成训练，而监督学习需要大量的有标签数据，强化学习需要与环境的大量交互尝试，数据为王的时代，此特点也使得大家充分相信自监督学习才是人工智能的发展方向。&lt;/p>
+&lt;h2 id="自监督学习的主要方法">自监督学习的主要方法&lt;/h2>
+&lt;h3 id="-基于上下文context-based">&lt;strong>● 基于上下文（Context based）&lt;/strong>&lt;/h3>
+&lt;p>基于数据本身的上下文信息，我们可以构造很多任务，如NLP领域中重要的Word2vec算法。Word2vec主要是利用语句的顺序，例如CBOW通过利用周围词来预测中心词，而Skip-Gram通过中心词来预测周围的词。&lt;/p>
+&lt;p>&lt;a href="https://mmbiz.qpic.cn/mmbiz_png/iceydPUR0IY2bum9rDm6cGkcXqWqys6DvcgEuwM0hrneicubOWibCGibTMbsk1ke0VsvAra92wRdZgM8nj6tU2ozdg/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1">&lt;/a>&lt;/p>
+&lt;p>&lt;strong>图 1 Word2vec的两种方法&lt;/strong>&lt;/p>
+&lt;p>在图像领域，研究人员通过一种名为Jigsaw（拼图）的方式来构造辅助任务（pretext）。将一张图分成9个部分，然后通过预测这几个部分的相对位置来产生损失。比如输入这张图中小猫的眼睛和右耳朵，然后让模型学习到猫的右耳朵是在眼睛的右上方的，如果模型能够很好得完成这个任务，那么就可以认为模型学习到的表征是具有语义信息的。&lt;/p>
+&lt;p>&lt;a href="https://mmbiz.qpic.cn/mmbiz_png/iceydPUR0IY2bum9rDm6cGkcXqWqys6DvoKuUwQpjibEuQBvmZauMdM6pyulB2JXNSwRXm8NRusRib4icMjloZbVUQ/640?wx_fmt=png&amp;amp;wxfrom=5&amp;amp;wx_lazy=1&amp;amp;wx_co=1">&lt;/a>&lt;/p>
+&lt;p>&lt;strong>基于上下文预测的无监督视觉表征学习&lt;/strong>&lt;/p>
+&lt;h3 id="-基于时序temporal-based">&lt;strong>● 基于时序（Temporal Based）&lt;/strong>&lt;/h3>
+&lt;p>在基于上下文的方法中大多是基于样本本身的信息，而样本间其实也具有很多的约束关系，因此可以利用时序约束来进行自监督学习。最能体现时序的数据类型就是视频（video）。&lt;/p>
+&lt;p>在视频领域可以基于帧的相似性进行研究，对于视频中的每一帧存在特征相似的概念，简单来说可以认为视频中的相邻帧的特征是相似的，而相隔较远的视频帧之间的相似度较低。通过构建这种相似（positive）和不相似（negative）的样本来进行自监督约束。&lt;/p>
+&lt;h3 id="-基于对比contrastive-based">&lt;strong>● 基于对比（Contrastive Based）&lt;/strong>&lt;/h3>
+&lt;p>第三类自监督学习的方法是基于对比约束，它通过学习对两个事物的相似或不相似进行编码来构建表征。在第二部分中所介绍的基于时序的方法已经涉及到了基于对比的约束，其通过构建正样本（positive）和负样本（negative），然后度量正负样本的距离从而实现自监督学习。&lt;/p>
+&lt;h1 id="自编码器auto-encoder">自编码器（Auto-encoder)&lt;/h1>
+&lt;p>&lt;a href="https://zhuanlan.zhihu.com/p/561216882">https://zhuanlan.zhihu.com/p/561216882&lt;/a>&lt;/p>
+&lt;h3 id="示意图">示意图&lt;/h3>
+&lt;p>&lt;img src="Untitled%207.png" alt="Untitled">&lt;/p>
+&lt;h1 id="一些其他热门方向">一些其他热门方向&lt;/h1>
+&lt;ul>
+&lt;li>类脑（Brain-Inspired）&lt;/li>
+&lt;li>域外泛化（Out-of-domain Genelization）&lt;/li>
+&lt;li>图神经网络（Graph Neural Networks）&lt;/li>
+&lt;li>Learning Theory&lt;/li>
+&lt;li>Language Models and Prompting&lt;/li>
+&lt;li>Adversarial Robustness, Federated Learning, Compression&lt;/li>
+&lt;/ul></content><category scheme="https://bejsernia.github.io/categories/%E7%AC%94%E8%AE%B0/" term="笔记" label="笔记"/><category scheme="https://bejsernia.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" term="深度学习" label="深度学习"/><category scheme="https://bejsernia.github.io/tags/2023/" term="2023" label="2023"/></entry></feed>
