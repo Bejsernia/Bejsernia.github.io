@@ -23,10 +23,326 @@
         
             <copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright>
         
-        <lastBuildDate>Fri, 09 May 2025 17:22:10 &#43;0800</lastBuildDate>
+        <lastBuildDate>Mon, 06 Jul 2026 16:13:43 &#43;0800</lastBuildDate>
         
             <atom:link rel="self" type="application/rss&#43;xml" href="https://bejsernia.github.io/rss.xml" />
         
+        
+            <item>
+                <title>OpenWrt 主路由 &#43; iStoreOS 旁路由配置记录及踩坑总结</title>
+                <link>https://bejsernia.github.io/posts/siderouter/</link>
+                <guid isPermaLink="true">https://bejsernia.github.io/posts/siderouter/</guid>
+                <pubDate>Mon, 06 Jul 2026 15:38:00 &#43;0800</pubDate>
+                
+                    <author>kvis934@gmail.com (Bejsernia)</author>
+                
+                <copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright>
+                
+                    <description>&lt;h1 id=&#34;openwrt-主路由--istoreos-旁路由配置记录及踩坑总结&#34;&gt;OpenWrt 主路由 + iStoreOS 旁路由配置记录及踩坑总结&lt;/h1&gt;
+&lt;p&gt;最近重新部署了一下寝室网络，采用 &lt;strong&gt;OpenWrt 作为主路由，iStoreOS 作为旁路由&lt;/strong&gt; 的方案。整体配置参考了 James Life Blog 的教程，并结合自己的实际环境进行了调整。&lt;/p&gt;
+&lt;p&gt;原教程：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&#34;https://jameslifeblog.com/istoreos#toc---2a&#34;&gt;https://jameslifeblog.com/istoreos#toc---2a&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;本文主要记录整个配置流程，以及最后遇到的一个很不小心的 DNS 配置错误&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&#34;网络拓扑&#34;&gt;网络拓扑&lt;/h1&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;                Internet
+                    │
+                  光猫
+                    │
+          OpenWrt（主路由）
+          LAN：192.168.77.1
+                    │
+              交换机 / LAN
+        ┌──────────┴──────────┐
+        │                     │
+     普通终端             iStoreOS
+                        192.168.77.220
+                     （旁路由模式）
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;整个网络仍然由 OpenWrt 完成：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;PPPoE 拨号&lt;/li&gt;
+&lt;li&gt;DHCP&lt;/li&gt;
+&lt;li&gt;防火墙&lt;/li&gt;
+&lt;li&gt;NAT&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;iStoreOS 仅负责旁路由相关功能，不参与 DHCP。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&#34;一openwrt-配置&#34;&gt;一、OpenWrt 配置&lt;/h1&gt;
+&lt;p&gt;保持 OpenWrt 为唯一主路由。&lt;/p&gt;
+&lt;p&gt;主要负责：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;WAN 拨号&lt;/li&gt;
+&lt;li&gt;DHCP 服务&lt;/li&gt;
+&lt;li&gt;DNS（可选）&lt;/li&gt;
+&lt;li&gt;NAT&lt;/li&gt;
+&lt;li&gt;防火墙&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;LAN：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;192.168.77.1/24
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;DHCP 正常开启。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&#34;二istoreos-配置&#34;&gt;二、iStoreOS 配置&lt;/h1&gt;
+&lt;p&gt;安装完成后，进入网络向导。&lt;/p&gt;
+&lt;p&gt;选择：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;旁路由模式
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;随后配置：&lt;/p&gt;
+&lt;p&gt;IP：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;192.168.77.220
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;子网掩码：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;255.255.255.0
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;网关：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;192.168.77.1
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;DNS：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;192.168.77.1
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;保存后重启网络。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&#34;三为什么主路由-dhcp-列表里没有旁路由&#34;&gt;三、为什么主路由 DHCP 列表里没有旁路由？&lt;/h1&gt;
+&lt;p&gt;这里我一开始以为配置失败了。&lt;/p&gt;
+&lt;p&gt;实际上：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;这是正常现象。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;原因很简单：&lt;/p&gt;
+&lt;p&gt;iStoreOS 使用的是 &lt;strong&gt;静态 IP&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;DHCP 客户端列表只显示：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;通过 DHCP 获取 IP 的设备。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;因此：&lt;/p&gt;
+&lt;p&gt;OpenWrt 后台不会出现：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;192.168.77.220
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;但是：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping 192.168.77.220
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;完全正常。&lt;/p&gt;
+&lt;p&gt;如果需要确认：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ip neigh
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;或者：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;arp -n
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;即可查看 ARP 表。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&#34;四遇到的问题旁路由无法联网&#34;&gt;四、遇到的问题：旁路由无法联网&lt;/h1&gt;
+&lt;p&gt;配置完成以后：&lt;/p&gt;
+&lt;p&gt;主路由：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping iStoreOS
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;正常。&lt;/p&gt;
+&lt;p&gt;iStoreOS：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping 主路由
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;正常。&lt;/p&gt;
+&lt;p&gt;但是：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping www.baidu.com
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;失败。&lt;/p&gt;
+&lt;p&gt;然而：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping 223.5.5.5
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;正常。&lt;/p&gt;
+&lt;p&gt;说明：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;网络是通的。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;真正的问题：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;DNS。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;h1 id=&#34;五排查-dns&#34;&gt;五、排查 DNS&lt;/h1&gt;
+&lt;p&gt;首先查看：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cat /etc/resolv.conf
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;结果：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;nameserver 127.0.0.1
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这意味着：&lt;/p&gt;
+&lt;p&gt;iStoreOS 自己作为 DNS。&lt;/p&gt;
+&lt;p&gt;继续检查：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ss -lntup | grep :53
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;结果：&lt;/p&gt;
+&lt;p&gt;没有任何程序监听 53。&lt;/p&gt;
+&lt;p&gt;只有：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;5353
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;对应：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;avahi-daemon&lt;/li&gt;
+&lt;li&gt;wsdd2&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;因此：&lt;/p&gt;
+&lt;p&gt;DNS 请求全部发送到了：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;127.0.0.1
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;但是：&lt;/p&gt;
+&lt;p&gt;本地根本没有 DNS Server。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&#34;六继续排查-dnsmasq&#34;&gt;六、继续排查 dnsmasq&lt;/h1&gt;
+&lt;p&gt;查看状态：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;/etc/init.d/dnsmasq status
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;显示：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;running
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;但是：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;logread -e dnsmasq
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;出现：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;bad dhcp-option at line 29 of /var/etc/dnsmasq.conf.cfg01411c
+
+FAILED to start up
+
+Instance dnsmasq in a crash loop
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;说明：&lt;/p&gt;
+&lt;p&gt;dnsmasq 一直启动失败。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&#34;七最终找到问题&#34;&gt;七、最终找到问题&lt;/h1&gt;
+&lt;p&gt;查看：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;sed -n &#39;20,35p&#39; /var/etc/dnsmasq.conf.cfg01411c
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;发现：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;dhcp-option=tag:gc_us_proxy,3.192.168.77.220
+
+dhcp-option=tag:gc_us_proxy,6.192.168.77.220
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里居然写成了：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;3.192.168.77.220
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;正确应该是：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;3,192.168.77.220
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;以及：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;6,192.168.77.220
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;也就是说：&lt;/p&gt;
+&lt;p&gt;我把：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;,
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;误写成了：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;.
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;导致 dnsmasq 无法解析配置文件。&lt;/p&gt;
+&lt;p&gt;最终一直 Crash。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&#34;八另一个同样的错误&#34;&gt;八、另一个同样的错误&lt;/h1&gt;
+&lt;p&gt;后来又发现：&lt;/p&gt;
+&lt;p&gt;接口配置里面，&lt;/p&gt;
+&lt;p&gt;我同样把：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;,
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;写成了：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;.
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;导致对应配置也异常。&lt;/p&gt;
+&lt;p&gt;修改后：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;/etc/init.d/dnsmasq restart
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;成功启动。&lt;/p&gt;
+&lt;p&gt;再次检查：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ss -lntup | grep :53
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;已经能够看到：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;dnsmasq
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;监听：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;53
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;随后：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping www.baidu.com
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;恢复正常。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&#34;九经验总结&#34;&gt;九、经验总结&lt;/h1&gt;
+&lt;p&gt;整个过程中最容易误判的是：&lt;/p&gt;
+&lt;h2 id=&#34;1dhcp-列表没有旁路由&#34;&gt;1、DHCP 列表没有旁路由&lt;/h2&gt;
+&lt;p&gt;不用担心。&lt;/p&gt;
+&lt;p&gt;只要：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ping
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;正常即可。&lt;/p&gt;
+&lt;p&gt;因为静态 IP 不会出现在 DHCP Lease 中。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;2dns-看-resolvconf&#34;&gt;2、DNS 看 resolv.conf&lt;/h2&gt;
+&lt;p&gt;第一时间：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cat /etc/resolv.conf
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如果：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;127.0.0.1
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;一定要继续确认：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;53
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;端口是否真的有 DNS Server。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;3dnsmasq-crash-loop&#34;&gt;3、dnsmasq Crash Loop&lt;/h2&gt;
+&lt;p&gt;最重要的一条命令：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;logread -e dnsmasq
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;基本所有配置错误都会直接指出：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;bad dhcp-option
+
+line xx
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;定位效率非常高。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;4不要直接修改-varetc&#34;&gt;4、不要直接修改 /var/etc/&lt;/h2&gt;
+&lt;p&gt;例如：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;/var/etc/dnsmasq.conf.cfgxxxxx
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这些文件都是自动生成的。&lt;/p&gt;
+&lt;p&gt;真正应该修改的是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;LuCI 配置&lt;/li&gt;
+&lt;li&gt;UCI 配置&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;否则重启以后修改都会丢失。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&#34;总结&#34;&gt;总结&lt;/h1&gt;
+&lt;p&gt;整个旁路由配置其实并不复杂：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;OpenWrt 保持主路由。&lt;/li&gt;
+&lt;li&gt;iStoreOS 选择旁路由模式。&lt;/li&gt;
+&lt;li&gt;配置静态 IP、网关和 DNS。&lt;/li&gt;
+&lt;li&gt;确认 DNS 服务正常运行。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;我这次最大的坑其实不是网络，而是一个非常低级的配置错误：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;把 DHCP Option 中应该使用的逗号（&lt;code&gt;,&lt;/code&gt;）写成了句号（&lt;code&gt;.&lt;/code&gt;）。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这个错误会导致 dnsmasq 无法启动，而表现出来的现象却只是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;DNS 无法解析&lt;/li&gt;
+&lt;li&gt;旁路由不能联网&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/etc/resolv.conf&lt;/code&gt; 指向 &lt;code&gt;127.0.0.1&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果以后再遇到类似问题，建议优先检查：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;cat /etc/resolv.conf
+
+ss -lntup | grep :53
+
+logread -e dnsmasq
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;通常几分钟内就能定位问题。&lt;/p&gt;
+</description>
+                
+                
+                
+                
+                
+                    
+                        
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/categories/%E7%BD%91%E7%BB%9C/">网络</category>
+                                
+                            
+                        
+                    
+                        
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/openwrt/">OpenWrt</category>
+                                
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/istoreos/">iStoreOS</category>
+                                
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/%E6%97%81%E8%B7%AF%E7%94%B1/">旁路由</category>
+                                
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/dns/">DNS</category>
+                                
+                            
+                                
+                                
+                                
+                                    <category domain="https://bejsernia.github.io/tags/2026/">2026</category>
+                                
+                            
+                        
+                    
+                
+            </item>
         
             <item>
                 <title>Guru数据恢复邮件记录-2018</title>
