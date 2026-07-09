@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>Bejsernia's Blog</title><link>https://bejsernia.github.io/</link><description>MemE 是一个强大且可高度定制的 GoHugo 博客主题，专为个人博客设计。</description><generator>Hugo 0.92.2 https://gohugo.io/</generator><language>zh-CN</language><managingEditor>kvis934@gmail.com (Bejsernia)</managingEditor><webMaster>kvis934@gmail.com (Bejsernia)</webMaster><copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright><lastBuildDate>Thu, 09 Jul 2026 14:42:52 +0800</lastBuildDate><atom:link rel="self" type="application/rss+xml" href="https://bejsernia.github.io/rss.xml"/><item><title>Tailscale</title><link>https://bejsernia.github.io/posts/tailscale/</link><guid isPermaLink="true">https://bejsernia.github.io/posts/tailscale/</guid><pubDate>Tue, 07 Jul 2026 12:15:20 +0800</pubDate><author>kvis934@gmail.com (Bejsernia)</author><copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright><description>&lt;h1 id="第一步获取tailscale-api-key">第一步：获取Tailscale API Key&lt;/h1>
+<?xml version="1.0" encoding="utf-8"?><rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>Bejsernia's Blog</title><link>https://bejsernia.github.io/</link><description>MemE 是一个强大且可高度定制的 GoHugo 博客主题，专为个人博客设计。</description><generator>Hugo 0.92.2 https://gohugo.io/</generator><language>zh-CN</language><managingEditor>kvis934@gmail.com (Bejsernia)</managingEditor><webMaster>kvis934@gmail.com (Bejsernia)</webMaster><copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright><lastBuildDate>Thu, 09 Jul 2026 15:20:33 +0800</lastBuildDate><atom:link rel="self" type="application/rss+xml" href="https://bejsernia.github.io/rss.xml"/><item><title>Tailscale</title><link>https://bejsernia.github.io/posts/tailscale/</link><guid isPermaLink="true">https://bejsernia.github.io/posts/tailscale/</guid><pubDate>Tue, 07 Jul 2026 12:15:20 +0800</pubDate><author>kvis934@gmail.com (Bejsernia)</author><copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright><description>&lt;h1 id="第一步获取tailscale-api-key">第一步：获取Tailscale API Key&lt;/h1>
 &lt;p>Tailscale的部署非常简单，第一步就是获取一个用于部署的API Key。&lt;/p>
 &lt;p>登录Tailscale官网：访问 &lt;a href="https://tailscale.com/">https://tailscale.com/&lt;/a>&lt;/p>
 &lt;p>创建API Key：登录后，导航至**“Settings”，点击左侧的“Keys”**选项。记得选Reusable，重新构建镜像的时候key不会失效&lt;/p>
@@ -47,7 +47,35 @@ environment:
 &lt;p>选择Nas作为Exit Node。&lt;/p>
 &lt;p>获取NAS IP：登录后，你会看到你的NAS服务已经出现在设备列表中。点击它，可以复制它分配的IP地址。&lt;/p>
 &lt;p>远程访问：打开浏览器，输入这个IP地址，你就能轻松访问了！&lt;/p>
-&lt;p>如果你有IPv6地址，那么Tailscale会利用它实现点对点直连，速度非常理想。你可以通过SSH连接到NAS，运行指定命令来确认是否处于直连状态。&lt;/p></description><category domain="https://bejsernia.github.io/categories/%E7%BD%91%E7%AB%99/">网站</category><category domain="https://bejsernia.github.io/tags/tailscale/">Tailscale</category><category domain="https://bejsernia.github.io/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/">内网穿透</category><category domain="https://bejsernia.github.io/tags/nas/">Nas</category><category domain="https://bejsernia.github.io/tags/%E7%BD%91%E7%BB%9C/">网络</category><category domain="https://bejsernia.github.io/tags/2026/">2026</category></item><item><title>Giffgaff申请教程</title><link>https://bejsernia.github.io/posts/giffgaff/</link><guid isPermaLink="true">https://bejsernia.github.io/posts/giffgaff/</guid><pubDate>Mon, 06 Jul 2026 16:33:36 +0800</pubDate><author>kvis934@gmail.com (Bejsernia)</author><copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright><description>&lt;h1 id="giffgaff-申请教程实体卡-vs-esim国行手机免root获取激活码全流程">Giffgaff 申请教程：实体卡 vs eSIM，国行手机免Root获取激活码全流程&lt;/h1>
+&lt;p>如果你有IPv6地址，那么Tailscale会利用它实现点对点直连，速度非常理想。你可以通过SSH连接到NAS，运行指定命令来确认是否处于直连状态。&lt;/p>
+&lt;h1 id="extra碰到的问题">Extra：碰到的问题&lt;/h1>
+&lt;ol>
+&lt;li>TS_ROUTES变量很重要，里面的网段才认为是内网可以访问；由于学校服务器都是10.开头，所以加上了10.0.0.0/8；其他校园网ip多以100.开头，但是这个和tailscale自己分配的ip太像了，就不管了&lt;/li>
+&lt;li>在旁路由A里跑tailscale docker的话，tailscale的容器发出去的流量走的是来自主路由的直连网络，而不是代理&lt;/li>
+&lt;/ol>
+&lt;pre tabindex="0">&lt;code>iptables -t nat -L -n -v --line-numbers
+iptables -t mangle -L -n -v --line-numbers
+&lt;/code>&lt;/pre>&lt;p>通过查看规则，发现&lt;code>1 42213 2602K SS_SPEC_WAN_AC tcp -- eth0 * 0.0.0.0/0 0.0.0.0/0&lt;/code>。这条规则明确限定了 -i eth0——也就是说，SSR Plus 的透明代理拦截规则只对&amp;quot;从 A 的物理网卡 eth0 进入的流量&amp;quot;生效。而 tailscale 转发的流量是从 tailscale0 这个虚拟接口进入 PREROUTING 的，完全不会匹配这条规则，也就直接跳过了整个 SS_SPEC_WAN_AC 代理分流逻辑。
+结果就是：tailscale 转发的流量走了 POSTROUTING 里排在后面的这条兜底规则：
+&lt;code>2 137K 19M MASQUERADE all -- * eth0 0.0.0.0/0 0.0.0.0/0&lt;/code>
+直接从 eth0 做普通 NAT 出网，完全没经过代理，所以出去的是 A 所在网络本身的直连出口 IP&lt;/p>
+&lt;p>修复方法：让 tailscale0 进来的流量也走一遍代理分流逻辑
+在 A 上执行（先手动测试验证）：&lt;/p>
+&lt;pre tabindex="0">&lt;code>bashiptables -t nat -I PREROUTING 2 -i tailscale0 -p tcp -j SS_SPEC_WAN_AC
+&lt;/code>&lt;/pre>&lt;p>这条命令会在原来那条 eth0 规则之后，插入一条几乎一样的规则，只是把匹配接口换成 tailscale0，让 tailscale 转发进来的 TCP 流量也走同一套 SS_SPEC_WAN_AC 判断逻辑（走 china ipset 判断是否直连，不是则走 REDIRECT 到 1234 端口交给 SSR Plus 代理）。
+加完之后，回到 B 上重新测试出口 IP：&lt;/p>
+&lt;pre tabindex="0">&lt;code>curl ifconfig.me
+&lt;/code>&lt;/pre>&lt;p>理论上这次应该显示代理节点的 IP 了。&lt;/p>
+&lt;p>持久化方法：
+方案一：&lt;/p>
+&lt;pre tabindex="0">&lt;code># 编辑 /etc/rc.local，在 exit 0 之前加入
+iptables -t nat -I PREROUTING 2 -i tailscale0 -p tcp -j SS_SPEC_WAN_AC 2&amp;gt;/dev/null
+&lt;/code>&lt;/pre>&lt;p>方案二：&lt;/p>
+&lt;pre tabindex="0">&lt;code># 检查文件是否存在，不存在就创建
+cat /etc/firewall.user
+# 追加这条规则（如果还没加过）
+echo 'iptables -t nat -I PREROUTING 2 -i tailscale0 -p tcp -j SS_SPEC_WAN_AC 2&amp;gt;/dev/null' &amp;gt;&amp;gt; /etc/firewall.user
+&lt;/code>&lt;/pre></description><category domain="https://bejsernia.github.io/categories/%E7%BD%91%E7%AB%99/">网站</category><category domain="https://bejsernia.github.io/tags/tailscale/">Tailscale</category><category domain="https://bejsernia.github.io/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/">内网穿透</category><category domain="https://bejsernia.github.io/tags/nas/">Nas</category><category domain="https://bejsernia.github.io/tags/%E7%BD%91%E7%BB%9C/">网络</category><category domain="https://bejsernia.github.io/tags/2026/">2026</category></item><item><title>Giffgaff申请教程</title><link>https://bejsernia.github.io/posts/giffgaff/</link><guid isPermaLink="true">https://bejsernia.github.io/posts/giffgaff/</guid><pubDate>Mon, 06 Jul 2026 16:33:36 +0800</pubDate><author>kvis934@gmail.com (Bejsernia)</author><copyright>[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)</copyright><description>&lt;h1 id="giffgaff-申请教程实体卡-vs-esim国行手机免root获取激活码全流程">Giffgaff 申请教程：实体卡 vs eSIM，国行手机免Root获取激活码全流程&lt;/h1>
 &lt;p>最近整理了一下海外保号卡的方案，选择了英国运营商 &lt;strong>Giffgaff&lt;/strong> 作为长期保号卡。整体内容参考了 B 站/YouTube 上的一期视频教程，并结合自己的实际操作补充了一些细节，尤其是国行手机（不支持原生 eSIM）如何免 Root 获取激活码的部分。&lt;/p>
 &lt;p>原视频：&lt;/p>
 &lt;blockquote>
